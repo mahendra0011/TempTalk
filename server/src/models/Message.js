@@ -1,5 +1,54 @@
 import mongoose from "mongoose";
 
+const reactionUserSchema = new mongoose.Schema(
+  {
+    username: String,
+    reactedAt: Date
+  },
+  { _id: false }
+);
+
+const reactionSchema = new mongoose.Schema(
+  {
+    emoji: String,
+    users: {
+      type: [reactionUserSchema],
+      default: []
+    }
+  },
+  { _id: false }
+);
+
+const readReceiptSchema = new mongoose.Schema(
+  {
+    username: String,
+    seenAt: Date
+  },
+  { _id: false }
+);
+
+const replySchema = new mongoose.Schema(
+  {
+    messageId: String,
+    sender: String,
+    text: String
+  },
+  { _id: false }
+);
+
+const attachmentSchema = new mongoose.Schema(
+  {
+    attachmentId: String,
+    kind: String,
+    name: String,
+    mimeType: String,
+    size: Number,
+    url: String,
+    storedName: String
+  },
+  { _id: false }
+);
+
 const messageSchema = new mongoose.Schema(
   {
     messageId: {
@@ -19,8 +68,32 @@ const messageSchema = new mongoose.Schema(
     },
     text: {
       type: String,
-      required: true,
+      default: "",
       maxlength: 1000
+    },
+    attachment: {
+      type: attachmentSchema,
+      default: null
+    },
+    replyTo: {
+      type: replySchema,
+      default: null
+    },
+    reactions: {
+      type: [reactionSchema],
+      default: []
+    },
+    readBy: {
+      type: [readReceiptSchema],
+      default: []
+    },
+    editedAt: {
+      type: Date,
+      default: null
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     },
     expiresAt: {
       type: Date,

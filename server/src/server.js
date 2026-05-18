@@ -13,6 +13,7 @@ await connectDB();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: createSocketCorsOptions(),
+  maxHttpBufferSize: Math.max(Number(process.env.MAX_ATTACHMENT_MB || 20), 1) * 1024 * 1024,
   pingTimeout: 30000,
   pingInterval: 10000
 });

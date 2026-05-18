@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { createCorsOptions } from "./config/cors.js";
 import roomRoutes from "./routes/roomRoutes.js";
+import { getUploadRoot } from "./services/fileStore.js";
 
 const app = express();
 
@@ -14,6 +15,15 @@ app.use(
 );
 app.use(cors(createCorsOptions()));
 app.use(express.json({ limit: "64kb" }));
+app.use(
+  "/uploads",
+  express.static(getUploadRoot(), {
+    setHeaders(res) {
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+    }
+  })
+);
 
 app.use(
   "/api",

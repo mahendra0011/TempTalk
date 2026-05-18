@@ -1,5 +1,5 @@
 import { createRoom, getRoom } from "../services/chatStore.js";
-import { sanitizeRoomId } from "../utils/sanitize.js";
+import { sanitizeRoomId, sanitizeSecret } from "../utils/sanitize.js";
 
 function buildPublicUrl(req, roomId) {
   const clientUrl = process.env.PUBLIC_CLIENT_URL || process.env.CLIENT_URL || req.get("origin");
@@ -13,12 +13,24 @@ function buildPublicUrl(req, roomId) {
 
 export async function createRoomHandler(req, res, next) {
   try {
-    const room = await createRoom();
+    const mode = req.body?.mode === "group" ? "group" : "private";
+    const secret = sanitizeSecret(req.body?.secret);
+    const maxPeers = Number(req.body?.maxPeers);
+
+    if (mode === "group" && !secret) {
+      res.status(400).json({ message: "Secret key required for group chat." });
+      return;
+    }
+
+    const room = await createRoom({ mode, secret, maxPeers });
 
     res.status(201).json({
       roomId: room.roomId,
       link: `/chat/${room.roomId}`,
       url: buildPublicUrl(req, room.roomId),
+      mode: room.mode,
+      maxPeers: room.maxPeers,
+      requiresSecret: room.requiresSecret,
       expiresAt: room.expiresAt
     });
   } catch (error) {
@@ -44,6 +56,9 @@ export async function getRoomHandler(req, res, next) {
 
     res.json({
       roomId: room.roomId,
+      mode: room.mode,
+      maxPeers: room.maxPeers,
+      requiresSecret: room.requiresSecret,
       active: room.active,
       expiresAt: room.expiresAt
     });

@@ -17,8 +17,11 @@ async function request(path, options) {
   return data;
 }
 
-export function createRoom() {
-  return request("/api/rooms/create", { method: "POST" });
+export function createRoom(options = {}) {
+  return request("/api/rooms/create", {
+    method: "POST",
+    body: JSON.stringify(options)
+  });
 }
 
 export function getRoom(roomId) {

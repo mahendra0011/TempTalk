@@ -17,3 +17,7 @@ export function sanitizeRoomId(value) {
   const cleaned = sanitizeText(value, 24);
   return ROOM_ID_PATTERN.test(cleaned) ? cleaned : null;
 }
+
+export function sanitizeSecret(value) {
+  return sanitizeText(value, 64);
+}

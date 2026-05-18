@@ -17,6 +17,19 @@ const roomSchema = new mongoose.Schema(
       unique: true,
       index: true
     },
+    mode: {
+      type: String,
+      enum: ["private", "group"],
+      default: "private"
+    },
+    maxPeers: {
+      type: Number,
+      default: 2
+    },
+    secretHash: {
+      type: String,
+      default: null
+    },
     users: {
       type: [roomUserSchema],
       default: []
