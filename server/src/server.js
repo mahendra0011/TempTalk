@@ -21,5 +21,5 @@ const io = new Server(server, {
 registerChatSocket(io);
 
 server.listen(port, () => {
-  console.log(`GhostChat server listening on http://localhost:${port}`);
+  console.log(`TempTalk server listening on http://localhost:${port}`);
 });

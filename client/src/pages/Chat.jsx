@@ -29,7 +29,7 @@ import { getRoom } from "../utils/api.js";
 import { getIdentity } from "../utils/identity.js";
 
 function secretKey(roomId) {
-  return `ghostchat:${roomId}:secret`;
+  return `temptalk:${roomId}:secret`;
 }
 
 function upsertMessage(list, message) {
@@ -311,7 +311,7 @@ export default function Chat() {
       socket.off("room-full");
       socket.off("disconnect", handleDisconnect);
     };
-  }, [aliasInput, entered, joinAttempt, navigate, roomId, roomSecret]);
+  }, [entered, joinAttempt, navigate, roomId, roomSecret]);
 
   useEffect(() => {
     if (!entered || !username || joining || needSecret) {
@@ -446,7 +446,7 @@ export default function Chat() {
       return;
     }
 
-    sessionStorage.setItem(`ghostchat:${roomId}:identity`, JSON.stringify({ username: cleanAlias }));
+    sessionStorage.setItem(`temptalk:${roomId}:identity`, JSON.stringify({ username: cleanAlias }));
 
     if (clean) {
       sessionStorage.setItem(secretKey(roomId), clean);

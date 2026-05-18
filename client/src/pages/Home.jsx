@@ -41,7 +41,7 @@ export default function Home() {
       });
 
       if (cleanSecret) {
-        sessionStorage.setItem(`ghostchat:${room.roomId}:secret`, cleanSecret);
+        sessionStorage.setItem(`temptalk:${room.roomId}:secret`, cleanSecret);
       }
 
       navigate(`/chat/${room.roomId}`, {
@@ -68,7 +68,7 @@ export default function Home() {
     }
 
     if (joinSecret.trim()) {
-      sessionStorage.setItem(`ghostchat:${cleanId}:secret`, joinSecret.trim());
+      sessionStorage.setItem(`temptalk:${cleanId}:secret`, joinSecret.trim());
     }
 
     navigate(`/chat/${cleanId}`, {
@@ -90,7 +90,7 @@ export default function Home() {
             <Terminal size={15} />
             temporary private channel
           </p>
-          <h1>GhostChat</h1>
+          <h1>TempTalk</h1>
           <p className="lede">Anonymous rooms that vanish when the chat ends.</p>
         </div>
 

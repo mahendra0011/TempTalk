@@ -1,4 +1,4 @@
-# GhostChat
+# TempTalk
 
 Temporary anonymous chat built with React, Vite, Express, Socket.IO, and optional MongoDB TTL deletion.
 
@@ -37,8 +37,8 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 
 This repo includes `render.yaml` with:
 
-- `ghostchat-api` Node web service from `server/`
-- `ghostchat-client` static site from `client/`
+- `temptalk-api` Node web service from `server/`
+- `temptalk-client` static site from `client/`
 - SPA rewrite from `/*` to `/index.html` so invite links like `/chat/abc123` open correctly
 
 Important env vars:
@@ -49,4 +49,13 @@ CLIENT_URL=https://your-client.onrender.com
 PUBLIC_CLIENT_URL=https://your-client.onrender.com
 CORS_ORIGIN=https://your-client.onrender.com
 VITE_API_URL=https://your-api.onrender.com
+VITE_MAX_ATTACHMENT_MB=50
+```
+
+In Render dashboard, add this static-site rewrite if you are not using `render.yaml`:
+
+```txt
+Source: /*
+Destination: /index.html
+Action: Rewrite
 ```

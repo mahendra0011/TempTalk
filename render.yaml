@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ghostchat-api
+    name: temptalk-api
     runtime: node
     rootDir: server
     buildCommand: npm install
@@ -33,7 +33,7 @@ services:
         value: 50
 
   - type: web
-    name: ghostchat-client
+    name: temptalk-client
     runtime: static
     rootDir: client
     buildCommand: npm install && npm run build

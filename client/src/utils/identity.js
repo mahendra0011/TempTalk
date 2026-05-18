@@ -1,7 +1,7 @@
 const aliases = ["Cipher", "Vanta", "Nova", "Ghost", "Zero", "Pulse", "Echo", "Shade"];
 
 export function getIdentity(roomId) {
-  const key = `ghostchat:${roomId}:identity`;
+  const key = `temptalk:${roomId}:identity`;
   const existing = sessionStorage.getItem(key);
 
   if (existing) {
