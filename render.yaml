@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: ghostchat-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: PUBLIC_CLIENT_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: ROOM_TTL_MINUTES
+        value: 1440
+      - key: MESSAGE_TTL_MINUTES
+        value: 1440
+      - key: MAX_ROOM_PEERS
+        value: 2
+      - key: MAX_GROUP_PEERS
+        value: 12
+      - key: ABSOLUTE_MAX_GROUP_PEERS
+        value: 100
+      - key: MESSAGE_HISTORY_LIMIT
+        value: 1000
+      - key: SEEN_BATCH_LIMIT
+        value: 500
+      - key: MAX_ATTACHMENT_MB
+        value: 50
+
+  - type: web
+    name: ghostchat-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_MAX_ATTACHMENT_MB
+        value: 50
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

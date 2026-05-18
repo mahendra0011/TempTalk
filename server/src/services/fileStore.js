@@ -18,8 +18,8 @@ const allowedTypes = new Map([
   ["application/pdf", { kind: "pdf", ext: ".pdf" }]
 ]);
 
-const maxAttachmentBytes = Math.max(Number(process.env.MAX_ATTACHMENT_MB || 20), 1) * 1024 * 1024;
-const uploadRoot = path.resolve(process.cwd(), "uploads");
+const maxAttachmentBytes = Math.max(Number(process.env.MAX_ATTACHMENT_MB || 50), 1) * 1024 * 1024;
+const uploadRoot = path.resolve(process.env.UPLOAD_ROOT || path.join(process.cwd(), "uploads"));
 
 export function getUploadRoot() {
   return uploadRoot;

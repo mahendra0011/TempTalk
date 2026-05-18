@@ -9,14 +9,21 @@ const memoryRooms = new Map();
 const memoryMessages = new Map();
 const memoryTimers = new Map();
 
-const roomTtlMinutes = Number(process.env.ROOM_TTL_MINUTES || 60);
-const messageTtlMinutes = Number(process.env.MESSAGE_TTL_MINUTES || roomTtlMinutes);
-const roomTtlMs = Math.max(roomTtlMinutes, 1) * 60 * 1000;
-const messageTtlMs = Math.max(messageTtlMinutes, 1) * 60 * 1000;
+const roomTtlMinutes = Number(process.env.ROOM_TTL_MINUTES ?? 1440);
+const messageTtlMinutes = Number(process.env.MESSAGE_TTL_MINUTES ?? roomTtlMinutes);
+const roomTtlMs = roomTtlMinutes > 0 ? roomTtlMinutes * 60 * 1000 : null;
+const messageTtlMs = messageTtlMinutes > 0 ? messageTtlMinutes * 60 * 1000 : roomTtlMs;
 const defaultPrivatePeers = Number(process.env.MAX_ROOM_PEERS || 2);
 const defaultGroupPeers = Number(process.env.MAX_GROUP_PEERS || 12);
+const absoluteMaxGroupPeers = Number(process.env.ABSOLUTE_MAX_GROUP_PEERS || 100);
+const messageHistoryLimit = Math.max(Number(process.env.MESSAGE_HISTORY_LIMIT ?? 1000), 0);
+const seenBatchLimit = Math.max(Number(process.env.SEEN_BATCH_LIMIT ?? 500), 1);
 
 function dateAfter(ms) {
+  if (!ms) {
+    return null;
+  }
+
   return new Date(Date.now() + ms);
 }
 
@@ -46,7 +53,7 @@ function hashSecret(secret) {
 function clampPeers(value, mode) {
   const fallback = mode === "group" ? defaultGroupPeers : defaultPrivatePeers;
   const min = mode === "group" ? 3 : 2;
-  const max = mode === "group" ? 25 : 2;
+  const max = mode === "group" ? Math.max(absoluteMaxGroupPeers, min) : 2;
   const number = Number(value || fallback);
 
   return Math.min(Math.max(Number.isFinite(number) ? number : fallback, min), max);
@@ -71,11 +78,22 @@ function serializeMessage(message) {
 }
 
 function isExpired(record) {
-  return !record || new Date(record.expiresAt).getTime() <= Date.now();
+  return !record || (record.expiresAt && new Date(record.expiresAt).getTime() <= Date.now());
+}
+
+function activeExpiryFilter() {
+  return {
+    $or: [{ expiresAt: { $gt: new Date() } }, { expiresAt: null }, { expiresAt: { $exists: false } }]
+  };
 }
 
 function scheduleMemoryDeletion(roomId, expiresAt) {
   clearTimeout(memoryTimers.get(roomId));
+
+  if (!expiresAt) {
+    memoryTimers.delete(roomId);
+    return;
+  }
 
   const delay = Math.max(new Date(expiresAt).getTime() - Date.now(), 0);
   const timer = setTimeout(() => {
@@ -155,7 +173,7 @@ export async function verifyRoomAccess(roomId, secret) {
     ? await Room.findOne({
         roomId,
         active: true,
-        expiresAt: { $gt: new Date() }
+        ...activeExpiryFilter()
       }).lean()
     : cleanupMemoryRoom(roomId);
 
@@ -204,7 +222,7 @@ export async function getRoom(roomId) {
     const room = await Room.findOne({
       roomId,
       active: true,
-      expiresAt: { $gt: new Date() }
+      ...activeExpiryFilter()
     }).lean();
 
     return serializeDoc(room);
@@ -262,7 +280,7 @@ export async function getMessage(roomId, messageId) {
     const message = await Message.findOne({
       roomId,
       messageId,
-      expiresAt: { $gt: new Date() }
+      ...activeExpiryFilter()
     }).lean();
 
     return serializeMessage(message);
@@ -306,13 +324,18 @@ export async function createMessage({ roomId, sender, text, replyTo = null, atta
 
 export async function getMessages(roomId) {
   if (isMongoReady()) {
-    const messages = await Message.find({
+    let query = Message.find({
       roomId,
-      expiresAt: { $gt: new Date() }
+      ...activeExpiryFilter()
     })
       .sort({ createdAt: 1 })
-      .limit(200)
       .lean();
+
+    if (messageHistoryLimit > 0) {
+      query = query.limit(messageHistoryLimit);
+    }
+
+    const messages = await query;
 
     return messages.map(serializeMessage);
   }
@@ -462,7 +485,7 @@ function markReceipt(message, username, seenAt) {
 }
 
 export async function markMessagesSeen({ roomId, messageIds, username }) {
-  const uniqueIds = [...new Set(messageIds || [])].slice(0, 100);
+  const uniqueIds = [...new Set(messageIds || [])].slice(0, seenBatchLimit);
   const seenAt = new Date();
 
   if (uniqueIds.length === 0) {

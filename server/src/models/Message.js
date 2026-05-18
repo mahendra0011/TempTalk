@@ -97,7 +97,6 @@ const messageSchema = new mongoose.Schema(
     },
     expiresAt: {
       type: Date,
-      required: true,
       expires: 0,
       index: true
     }

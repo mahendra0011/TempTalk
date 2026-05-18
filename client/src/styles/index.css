@@ -811,7 +811,8 @@ button:disabled {
   margin: 0 auto;
 }
 
-.secret-gate input {
+.secret-gate input,
+.entry-gate input {
   height: 48px;
   border-radius: 8px;
   padding: 0 14px;
@@ -819,7 +820,22 @@ button:disabled {
   background: rgba(255, 255, 255, 0.055);
 }
 
-.secret-gate button {
+.entry-gate {
+  width: min(380px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.entry-gate label {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  color: #36ff88;
+}
+
+.secret-gate button,
+.entry-gate button {
   height: 44px;
   padding: 0 18px;
   border: 0;

@@ -1,5 +1,6 @@
 import {
   Copy,
+  DoorOpen,
   FileText,
   Image,
   Loader2,
@@ -12,6 +13,7 @@ import {
   Send,
   ShieldAlert,
   Sparkles,
+  UserRound,
   Video,
   X
 } from "lucide-react";
@@ -51,9 +53,11 @@ export default function Chat() {
   const location = useLocation();
   const navigate = useNavigate();
   const initialSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
+  const initialIdentity = getIdentity(roomId);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [username, setUsername] = useState("");
+  const [aliasInput, setAliasInput] = useState(initialIdentity.username);
   const [users, setUsers] = useState([]);
   const [connected, setConnected] = useState(false);
   const [joining, setJoining] = useState(true);
@@ -68,6 +72,7 @@ export default function Chat() {
   const [secretInput, setSecretInput] = useState(initialSecret);
   const [roomSecret, setRoomSecret] = useState(initialSecret);
   const [joinAttempt, setJoinAttempt] = useState(0);
+  const [entered, setEntered] = useState(Boolean(location.state?.autoEnter));
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -86,8 +91,9 @@ export default function Chat() {
     return `${window.location.origin}/chat/${roomId}`;
   }, [location.state, roomId]);
   const qr = useInviteQr(inviteUrl);
-  const ownName = username || getIdentity(roomId).username;
-  const maxFileBytes = 20 * 1024 * 1024;
+  const ownName = username || aliasInput || initialIdentity.username;
+  const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
+  const maxFileBytes = maxFileMb * 1024 * 1024;
 
   useEffect(() => {
     function showPrivacyNotice(message) {
@@ -173,6 +179,12 @@ export default function Chat() {
           requiresSecret: Boolean(room.requiresSecret)
         });
 
+        if (!entered) {
+          setNeedSecret(false);
+          setJoining(false);
+          return;
+        }
+
         if (room.requiresSecret && !roomSecret) {
           setNeedSecret(true);
           setJoining(false);
@@ -185,7 +197,7 @@ export default function Chat() {
 
         socket.emit(
           "join-room",
-          { roomId, username: identity.username, secret: roomSecret },
+          { roomId, username: aliasInput.trim() || identity.username, secret: roomSecret },
           (response) => {
             if (!active) {
               return;
@@ -197,6 +209,7 @@ export default function Chat() {
 
               if (response?.reason === "secret-required" || response?.reason === "invalid-secret") {
                 setNeedSecret(true);
+                setEntered(false);
                 return;
               }
 
@@ -298,10 +311,10 @@ export default function Chat() {
       socket.off("room-full");
       socket.off("disconnect", handleDisconnect);
     };
-  }, [joinAttempt, navigate, roomId, roomSecret]);
+  }, [aliasInput, entered, joinAttempt, navigate, roomId, roomSecret]);
 
   useEffect(() => {
-    if (!username || joining || needSecret) {
+    if (!entered || !username || joining || needSecret) {
       return;
     }
 
@@ -317,7 +330,7 @@ export default function Chat() {
     if (unseen.length > 0) {
       socket.emit("message-seen", { roomId, messageIds: unseen });
     }
-  }, [joining, messages, needSecret, ownName, roomId, username]);
+  }, [entered, joining, messages, needSecret, ownName, roomId, username]);
 
   function emitTyping(value) {
     setText(value);
@@ -418,17 +431,31 @@ export default function Chat() {
     });
   }
 
-  function submitSecret(event) {
+  function enterRoom(event) {
     event.preventDefault();
+    const cleanAlias = aliasInput.trim();
     const clean = secretInput.trim();
 
-    if (!clean) {
+    if (!cleanAlias) {
+      setError("Alias required.");
+      return;
+    }
+
+    if (roomMeta.requiresSecret && !clean) {
       setError("Secret key required.");
       return;
     }
 
-    sessionStorage.setItem(secretKey(roomId), clean);
+    sessionStorage.setItem(`ghostchat:${roomId}:identity`, JSON.stringify({ username: cleanAlias }));
+
+    if (clean) {
+      sessionStorage.setItem(secretKey(roomId), clean);
+    }
+
+    setError("");
+    setAliasInput(cleanAlias);
     setRoomSecret(clean);
+    setEntered(true);
     setNeedSecret(false);
     setJoinAttempt((current) => current + 1);
   }
@@ -489,7 +516,7 @@ export default function Chat() {
     }
 
     if (file.size > maxFileBytes) {
-      setError("File must be 20MB or smaller.");
+      setError(`File must be ${maxFileMb}MB or smaller.`);
       event.target.value = "";
       return;
     }
@@ -525,6 +552,7 @@ export default function Chat() {
   }
 
   const composerContext = editingMessage || replyTarget;
+  const showEntryGate = !entered || needSecret;
 
   return (
     <main className="app-shell chat-shell">
@@ -555,7 +583,7 @@ export default function Chat() {
             <IconButton label="Show QR" onClick={() => setShowQr(true)}>
               <QrCode size={18} />
             </IconButton>
-            <button className="danger-action" type="button" onClick={endChat} disabled={ending || joining || needSecret}>
+            <button className="danger-action" type="button" onClick={endChat} disabled={!entered || ending || joining || needSecret}>
               {ending ? <Loader2 className="spin" size={18} /> : <LogOut size={18} />}
               <span>End Chat</span>
             </button>
@@ -591,18 +619,30 @@ export default function Chat() {
           </aside>
 
           <section className={`message-panel ${privacyBlurred ? "message-panel-protected" : ""}`}>
-            {needSecret ? (
-              <form className="center-state secret-gate" onSubmit={submitSecret}>
-                <LockKeyhole size={32} />
-                <p>Secret key required</p>
-                <input
-                  value={secretInput}
-                  maxLength={64}
-                  onChange={(event) => setSecretInput(event.target.value)}
-                  placeholder="Enter group secret"
-                  type="password"
-                />
-                <button type="submit">Unlock</button>
+            {showEntryGate ? (
+              <form className="center-state entry-gate" onSubmit={enterRoom}>
+                <DoorOpen size={32} />
+                <p>Enter Room</p>
+                <label>
+                  <UserRound size={17} />
+                  <input
+                    value={aliasInput}
+                    maxLength={24}
+                    onChange={(event) => setAliasInput(event.target.value)}
+                    placeholder="Anonymous alias"
+                  />
+                </label>
+                <label>
+                  <LockKeyhole size={17} />
+                  <input
+                    value={secretInput}
+                    maxLength={64}
+                    onChange={(event) => setSecretInput(event.target.value)}
+                    placeholder={roomMeta.requiresSecret ? "Room secret key" : "Secret key if required"}
+                    type="password"
+                  />
+                </label>
+                <button type="submit">Enter Room</button>
               </form>
             ) : joining ? (
               <div className="center-state">
@@ -691,7 +731,7 @@ export default function Chat() {
               aria-label="Attach media"
               title="Attach media"
               onClick={() => fileInputRef.current?.click()}
-              disabled={joining || ending || needSecret || editingMessage}
+              disabled={showEntryGate || joining || ending || editingMessage}
             >
               <Paperclip size={19} />
             </button>
@@ -700,11 +740,11 @@ export default function Chat() {
               maxLength={1000}
               onChange={(event) => emitTyping(event.target.value)}
               placeholder={editingMessage ? "Edit your message" : "Type a private message"}
-              disabled={joining || ending || needSecret || sendingFile}
+              disabled={showEntryGate || joining || ending || sendingFile}
             />
             <button
               type="submit"
-              disabled={(!text.trim() && !selectedFile) || joining || ending || needSecret || sendingFile}
+              disabled={showEntryGate || (!text.trim() && !selectedFile) || joining || ending || sendingFile}
               aria-label="Send message"
             >
               {sendingFile ? <Loader2 className="spin" size={19} /> : <Send size={19} />}

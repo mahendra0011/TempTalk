@@ -47,7 +47,8 @@ export default function Home() {
       navigate(`/chat/${room.roomId}`, {
         state: {
           inviteUrl: room.url,
-          secret: cleanSecret
+          secret: cleanSecret,
+          autoEnter: true
         }
       });
     } catch (err) {
@@ -70,7 +71,12 @@ export default function Home() {
       sessionStorage.setItem(`ghostchat:${cleanId}:secret`, joinSecret.trim());
     }
 
-    navigate(`/chat/${cleanId}`, { state: { secret: joinSecret.trim() } });
+    navigate(`/chat/${cleanId}`, {
+      state: {
+        secret: joinSecret.trim(),
+        autoEnter: true
+      }
+    });
   }
 
   return (
