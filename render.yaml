@@ -3,7 +3,7 @@ services:
     name: temptalk-api
     runtime: node
     rootDir: server
-    buildCommand: npm install
+    buildCommand: npm ci --omit=dev --no-audit --fund=false
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -36,7 +36,7 @@ services:
     name: temptalk-client
     runtime: static
     rootDir: client
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci --include=dev --no-audit --fund=false && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL

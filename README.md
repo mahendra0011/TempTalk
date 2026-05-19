@@ -72,3 +72,7 @@ Source: /*
 Destination: /index.html
 Action: Rewrite
 ```
+
+If Render fails during dependency install with `npm ERR! network read ECONNRESET`, rerun the deploy. That error is a
+temporary npm registry/network drop, not a TempTalk build error. The blueprint uses `npm ci` and local `.npmrc` retry
+settings to make installs more reliable.
