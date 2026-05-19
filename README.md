@@ -29,7 +29,7 @@ https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.a
 The GitHub Actions workflow at `.github/workflows/android-apk.yml` builds a Capacitor Android APK and
 uploads it to that release whenever client code is pushed to `master`. Set repository variable or secret
 `VITE_API_URL` before building the APK if your Render API URL is different from
-`https://temptalk-api.onrender.com`.
+`https://temptalk-xwes.onrender.com`.
 
 Installed Android users can open invite links directly in the TempTalk APK. The workflow injects Android
 App Link intent filters into the APK, reads the APK signing SHA256 fingerprint after every build, and commits
@@ -76,22 +76,22 @@ with the room, but only message text is end-to-end encrypted.
 
 This repo includes `render.yaml` with:
 
-- `temptalk-api` Node web service from `server/`
-- `temptalk-client` static site from `client/`
+- `temptalk-xwes` Node web service from `server/`
+- `temptalk-1` static site from `client/`
 - SPA rewrite from `/*` to `/index.html` so invite links like `/chat/abc123` open correctly
 
 Important env vars:
 
 ```env
 MONGODB_URI=your_mongodb_atlas_connection_string
-CLIENT_URL=https://your-client.onrender.com
-PUBLIC_CLIENT_URL=https://your-client.onrender.com
-CORS_ORIGIN=https://your-client.onrender.com
-VITE_API_URL=https://your-api.onrender.com
+CLIENT_URL=https://temptalk-1.onrender.com
+PUBLIC_CLIENT_URL=https://temptalk-1.onrender.com
+CORS_ORIGIN=https://temptalk-1.onrender.com
+VITE_API_URL=https://temptalk-xwes.onrender.com
 VITE_MAX_ATTACHMENT_MB=50
 VITE_APK_URL=https://your-host/TempTalk.apk
-VITE_PUBLIC_CLIENT_URL=https://your-client.onrender.com
-VITE_APP_LINK_HOSTS=temptalk-client.onrender.com
+VITE_PUBLIC_CLIENT_URL=https://temptalk-1.onrender.com
+VITE_APP_LINK_HOSTS=temptalk-1.onrender.com
 ```
 
 For APK builds, set `ANDROID_APP_LINK_HOSTS` in GitHub Actions if your public client domain is different.

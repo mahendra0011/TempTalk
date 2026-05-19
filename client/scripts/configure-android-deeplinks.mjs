@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const defaultHosts = ["temptalk-client.onrender.com", "temptalk.vercel.app", "ghostchat.vercel.app"];
+const defaultHosts = ["temptalk-1.onrender.com"];
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

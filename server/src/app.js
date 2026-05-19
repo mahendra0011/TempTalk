@@ -38,7 +38,7 @@ app.use(
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
-    service: "temptalk-api",
+    service: "temptalk-xwes",
     time: new Date().toISOString()
   });
 });

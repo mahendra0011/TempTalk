@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: temptalk-api
+    name: temptalk-xwes
     runtime: node
     rootDir: server
     buildCommand: npm ci --omit=dev --no-audit --fund=false
@@ -10,11 +10,11 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: CLIENT_URL
-        sync: false
+        value: https://temptalk-1.onrender.com
       - key: PUBLIC_CLIENT_URL
-        value: https://temptalk-client.onrender.com
+        value: https://temptalk-1.onrender.com
       - key: CORS_ORIGIN
-        sync: false
+        value: https://temptalk-1.onrender.com
       - key: ROOM_TTL_MINUTES
         value: 1440
       - key: MESSAGE_TTL_MINUTES
@@ -33,20 +33,20 @@ services:
         value: 50
 
   - type: web
-    name: temptalk-client
+    name: temptalk-1
     runtime: static
     rootDir: client
     buildCommand: npm ci --include=dev --no-audit --fund=false && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://temptalk-xwes.onrender.com
       - key: VITE_MAX_ATTACHMENT_MB
         value: 50
       - key: VITE_APK_URL
         value: https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.apk
       - key: VITE_PUBLIC_CLIENT_URL
-        value: https://temptalk-client.onrender.com
+        value: https://temptalk-1.onrender.com
     routes:
       - type: rewrite
         source: /*

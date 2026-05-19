@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_CLIENT_URL = "https://temptalk-client.onrender.com";
+const DEFAULT_PUBLIC_CLIENT_URL = "https://temptalk-1.onrender.com";
 
 function isPublicHttpOrigin(value) {
   try {

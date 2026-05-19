@@ -1,7 +1,7 @@
 import { createRoom, getRoom } from "../services/chatStore.js";
 import { sanitizeRoomId, sanitizeSecret } from "../utils/sanitize.js";
 
-const defaultPublicClientUrl = "https://temptalk-client.onrender.com";
+const defaultPublicClientUrl = "https://temptalk-1.onrender.com";
 
 function getHttpOrigin(value) {
   try {

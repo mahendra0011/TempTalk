@@ -17,10 +17,10 @@ jobs:
     name: Build TempTalk APK
     runs-on: ubuntu-latest
     env:
-      VITE_API_URL: ${{ vars.VITE_API_URL || secrets.VITE_API_URL || 'https://temptalk-api.onrender.com' }}
+      VITE_API_URL: https://temptalk-xwes.onrender.com
       VITE_APK_URL: https://github.com/${{ github.repository }}/releases/download/apk-latest/TempTalk.apk
-      VITE_PUBLIC_CLIENT_URL: ${{ vars.VITE_PUBLIC_CLIENT_URL || secrets.VITE_PUBLIC_CLIENT_URL || 'https://temptalk-client.onrender.com' }}
-      ANDROID_APP_LINK_HOSTS: ${{ vars.ANDROID_APP_LINK_HOSTS || secrets.ANDROID_APP_LINK_HOSTS || 'temptalk-client.onrender.com,temptalk.vercel.app,ghostchat.vercel.app' }}
+      VITE_PUBLIC_CLIENT_URL: https://temptalk-1.onrender.com
+      ANDROID_APP_LINK_HOSTS: temptalk-1.onrender.com
 
     steps:
       - name: Checkout repository
