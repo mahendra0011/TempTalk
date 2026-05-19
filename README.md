@@ -14,6 +14,12 @@ Frontend: `http://localhost:5173`
 
 Backend: `http://localhost:5000`
 
+## App Conversion
+
+TempTalk is configured as a PWA, so Android users can open the deployed site in Chrome and use
+**Install app** or **Add to Home screen**. This keeps the same React/Vite frontend and Node/Express
+backend. For a Play Store APK/AAB later, wrap the same `client/` app with Capacitor.
+
 ## Environment
 
 Copy `server/.env.example` to `server/.env`.
@@ -24,6 +30,7 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 
 ## Included Features
 
+- Installable Android/browser app experience through PWA manifest and service worker
 - Private one-to-one temporary rooms
 - Secret group rooms with a required room key
 - Custom room IDs and secret keys for create room, create group, and enter room flows

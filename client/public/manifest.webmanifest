@@ -1,0 +1,34 @@
+{
+  "name": "TempTalk",
+  "short_name": "TempTalk",
+  "description": "Temporary encrypted chat rooms that disappear when the chat ends.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020403",
+  "theme_color": "#020403",
+  "categories": ["social", "security", "productivity"],
+  "icons": [
+    {
+      "src": "/temptalk-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Room",
+      "short_name": "Create",
+      "description": "Open TempTalk to create a private room.",
+      "url": "/"
+    },
+    {
+      "name": "Enter Room",
+      "short_name": "Enter",
+      "description": "Open TempTalk to enter an invite room.",
+      "url": "/"
+    }
+  ]
+}
