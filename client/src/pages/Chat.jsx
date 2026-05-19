@@ -122,7 +122,6 @@ export default function Chat() {
   const [editingMessage, setEditingMessage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [sendingFile, setSendingFile] = useState(false);
-  const [privacyBlurred, setPrivacyBlurred] = useState(false);
   const [privacyNotice, setPrivacyNotice] = useState("");
   const [visibleSecrets, setVisibleSecrets] = useState({ room: false });
   const typingTimerRef = useRef(null);
@@ -182,34 +181,16 @@ export default function Chat() {
       }
     }
 
-    function lockView() {
-      setPrivacyBlurred(true);
-    }
-
-    function unlockView() {
-      setPrivacyBlurred(false);
-    }
-
-    function handleVisibility() {
-      setPrivacyBlurred(document.hidden);
-    }
-
     document.addEventListener("contextmenu", blockDefault);
     document.addEventListener("copy", blockDefault);
     document.addEventListener("cut", blockDefault);
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("blur", lockView);
-    window.addEventListener("focus", unlockView);
 
     return () => {
       document.removeEventListener("contextmenu", blockDefault);
       document.removeEventListener("copy", blockDefault);
       document.removeEventListener("cut", blockDefault);
       document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("blur", lockView);
-      window.removeEventListener("focus", unlockView);
     };
   }, []);
 
@@ -775,7 +756,7 @@ export default function Chat() {
             </div>
           </aside>
 
-          <section className={`message-panel ${privacyBlurred ? "message-panel-protected" : ""}`}>
+          <section className="message-panel">
             {showEntryGate ? (
               <form className="center-state entry-gate" onSubmit={enterRoom}>
                 <div className="entry-icon">
@@ -925,7 +906,6 @@ export default function Chat() {
 
         {error ? <p className="toast-error">{error}</p> : null}
         {privacyNotice ? <p className="toast-error privacy-toast">{privacyNotice}</p> : null}
-        {privacyBlurred ? <div className="privacy-overlay">Protected view</div> : null}
       </section>
 
       {showQr ? <QrModal qr={qr} onClose={() => setShowQr(false)} /> : null}

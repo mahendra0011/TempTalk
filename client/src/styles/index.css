@@ -730,12 +730,6 @@ button:disabled {
   background-size: 100% 100%, 100% 100%, 100% 32px, cover;
 }
 
-.message-panel-protected {
-  filter: blur(14px);
-  pointer-events: none;
-  user-select: none;
-}
-
 .message-list {
   height: 100%;
   overflow-y: auto;
@@ -1348,22 +1342,6 @@ button:disabled {
   bottom: 130px;
 }
 
-.privacy-overlay {
-  position: absolute;
-  inset: 82px 14px 78px;
-  z-index: 5;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 200, 87, 0.24);
-  border-radius: 8px;
-  color: #ffc857;
-  background: rgba(2, 4, 3, 0.54);
-  backdrop-filter: blur(18px);
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.88rem;
-  text-transform: uppercase;
-}
-
 .ended-panel {
   width: min(560px, 100%);
   border-radius: 8px;
@@ -1895,10 +1873,6 @@ button:disabled {
     text-align: center;
   }
 
-  .privacy-overlay {
-    inset: 74px 8px 72px;
-    border-radius: 14px;
-  }
 }
 
 @media (max-width: 390px) {
