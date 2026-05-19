@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   CirclePlus,
+  Download,
   DoorOpen,
   Eye,
   EyeOff,
@@ -13,11 +14,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import LiquidEther from "../components/LiquidEther.jsx";
 import { createRoom } from "../utils/api.js";
 import { appendInviteKey, generateRoomKey, parseRoomInvite } from "../utils/e2e.js";
 
 const ROOM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const SECRET_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const APK_URL = import.meta.env.VITE_APK_URL || "/TempTalk.apk";
+const LIQUID_COLORS = ["#36ff88", "#9a5cff", "#ffc857"];
 
 function randomString(chars, length) {
   const bytes = crypto.getRandomValues(new Uint8Array(length));
@@ -45,6 +49,7 @@ export default function Home() {
   const [maxPeers, setMaxPeers] = useState(8);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  const [apkStatus, setApkStatus] = useState("");
   const [visibleSecrets, setVisibleSecrets] = useState({
     room: false,
     group: false,
@@ -137,6 +142,32 @@ export default function Home() {
     }
   }
 
+  async function downloadApk() {
+    setApkStatus("");
+
+    try {
+      if (APK_URL.startsWith("/")) {
+        const response = await fetch(APK_URL, { method: "HEAD" });
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!response.ok || contentType.includes("text/html")) {
+          setApkStatus("APK file is not uploaded yet. Use Install app from Chrome for now.");
+          return;
+        }
+      }
+
+      const link = document.createElement("a");
+      link.href = APK_URL;
+      link.download = "TempTalk.apk";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setApkStatus("APK download started.");
+    } catch {
+      setApkStatus("APK download is not available right now.");
+    }
+  }
+
   function handleJoin(event) {
     event.preventDefault();
     const invite = parseRoomInvite(joinId);
@@ -170,6 +201,25 @@ export default function Home() {
 
   return (
     <main className="app-shell home-shell">
+      <div className="home-liquid-bg" aria-hidden="true">
+        <LiquidEther
+          colors={LIQUID_COLORS}
+          mouseForce={34}
+          cursorSize={142}
+          isViscous={false}
+          viscous={30}
+          iterationsViscous={24}
+          iterationsPoisson={28}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo
+          autoSpeed={1}
+          autoIntensity={4.2}
+          takeoverDuration={0.22}
+          autoResumeDelay={0}
+          autoRampDuration={0.6}
+        />
+      </div>
       <section className="home-grid">
         <div className="brand-block">
           <div className="brand-mark">
@@ -214,6 +264,14 @@ export default function Home() {
               <DoorOpen size={17} />
               <span>Enter Room</span>
             </button>
+          </div>
+
+          <div className="app-download-row">
+            <button className="secondary-action apk-download" type="button" onClick={downloadApk}>
+              <Download size={17} />
+              <span>Download APK</span>
+            </button>
+            <small>Android app file</small>
           </div>
 
           {activeAction === "create-room" ? (
@@ -376,6 +434,7 @@ export default function Home() {
             Privacy Policy
           </Link>
 
+          {apkStatus ? <p className="status-text">{apkStatus}</p> : null}
           {error ? <p className="error-text">{error}</p> : null}
         </div>
       </section>

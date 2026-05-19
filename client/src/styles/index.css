@@ -66,8 +66,27 @@ button:disabled {
   padding: 28px;
 }
 
+.home-shell {
+  overflow: hidden;
+}
+
+.home-liquid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.86;
+  mix-blend-mode: screen;
+}
+
+.home-liquid-bg canvas {
+  filter: saturate(1.35) contrast(1.1);
+}
+
 .home-grid {
   width: min(1080px, 100%);
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 430px);
   align-items: stretch;
@@ -290,6 +309,31 @@ button:disabled {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.app-download-row {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid rgba(154, 92, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(154, 92, 255, 0.07);
+}
+
+.app-download-row small {
+  color: rgba(236, 255, 245, 0.58);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.apk-download {
+  color: #ecfff5;
+  border-color: rgba(154, 92, 255, 0.36);
+  background: rgba(154, 92, 255, 0.16);
+}
+
 .generator-row small {
   min-width: 0;
   color: rgba(236, 255, 245, 0.58);
@@ -496,10 +540,15 @@ button:disabled {
 }
 
 .error-text,
-.toast-error {
+.toast-error,
+.status-text {
   color: #ff8aa0;
   font-size: 0.83rem;
   margin: 0;
+}
+
+.status-text {
+  color: #36ff88;
 }
 
 .chat-shell {
@@ -1578,6 +1627,10 @@ button:disabled {
     padding: 12px;
   }
 
+  .home-liquid-bg {
+    opacity: 0.62;
+  }
+
   .chat-shell {
     padding: 0;
     min-height: 100dvh;
@@ -1619,7 +1672,13 @@ button:disabled {
     flex-direction: column;
   }
 
-  .generator-row small {
+  .app-download-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .generator-row small,
+  .app-download-row small {
     text-align: left;
   }
 
