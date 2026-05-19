@@ -16,6 +16,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createRoom } from "../utils/api.js";
 import { appendInviteKey, deriveRoomKey, parseRoomInvite } from "../utils/e2e.js";
+import { buildRoomInviteUrl } from "../utils/inviteLinks.js";
+import { API_URL, configureApiUrl } from "../socket/socket.js";
 
 const ROOM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const SECRET_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -117,7 +119,7 @@ export default function Home() {
         maxPeers
       });
       const encryptionKey = await deriveRoomKey(room.roomId, cleanSecret);
-      const inviteUrl = appendInviteKey(room.url, encryptionKey, cleanSecret);
+      const inviteUrl = appendInviteKey(buildRoomInviteUrl(room.roomId), encryptionKey, cleanSecret, API_URL);
       const inviteTarget = new URL(inviteUrl, window.location.origin);
 
       if (cleanSecret) {
@@ -162,6 +164,7 @@ export default function Home() {
     }
 
     const encryptionKey = invite.key || (await deriveRoomKey(cleanId, cleanSecret)) || savedKey;
+    configureApiUrl(invite.apiUrl);
 
     sessionStorage.setItem(`temptalk:${cleanId}:secret`, cleanSecret);
 
@@ -170,9 +173,9 @@ export default function Home() {
     }
 
     const hasInviteAccess = Boolean(invite.key || invite.secret);
-    const invitePath = hasInviteAccess ? appendInviteKey(`/chat/${cleanId}`, encryptionKey, cleanSecret) : "";
-    const inviteTarget = hasInviteAccess ? new URL(invitePath, window.location.origin) : null;
-    const chatPath = inviteTarget ? `${inviteTarget.pathname}${inviteTarget.hash}` : `/chat/${cleanId}`;
+    const invitePath = hasInviteAccess ? appendInviteKey(buildRoomInviteUrl(cleanId), encryptionKey, cleanSecret, invite.apiUrl || API_URL) : "";
+    const inviteTarget = hasInviteAccess ? new URL(invitePath) : null;
+    const chatPath = `/chat/${cleanId}${inviteTarget?.hash || ""}`;
 
     navigate(chatPath, {
       state: {

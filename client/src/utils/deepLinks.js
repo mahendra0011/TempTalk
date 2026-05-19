@@ -1,5 +1,6 @@
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import { configureApiUrlFromInviteUrl } from "../socket/socket.js";
 
 const ANDROID_PACKAGE = "com.temptalk.app";
 const OPEN_APP_MARKER = "openAppTried";
@@ -59,6 +60,7 @@ export function registerNativeDeepLinks(navigate) {
   let disposed = false;
 
   function openUrl(url, replace = false) {
+    configureApiUrlFromInviteUrl(url);
     const route = routeFromDeepLink(url);
 
     if (route) {

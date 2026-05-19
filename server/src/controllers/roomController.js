@@ -1,12 +1,27 @@
 import { createRoom, getRoom } from "../services/chatStore.js";
 import { sanitizeRoomId, sanitizeSecret } from "../utils/sanitize.js";
 
-function buildPublicUrl(req, roomId) {
-  const clientUrl = process.env.PUBLIC_CLIENT_URL || process.env.CLIENT_URL || req.get("origin");
+const defaultPublicClientUrl = "https://temptalk-client.onrender.com";
 
-  if (!clientUrl) {
-    return `/chat/${roomId}`;
+function getHttpOrigin(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:" || url.protocol === "http:") {
+      return url.origin;
+    }
+  } catch {
+    return "";
   }
+
+  return "";
+}
+
+function buildPublicUrl(req, roomId) {
+  const clientUrl =
+    getHttpOrigin(process.env.PUBLIC_CLIENT_URL) ||
+    getHttpOrigin(process.env.CLIENT_URL) ||
+    getHttpOrigin(req.get("origin")) ||
+    defaultPublicClientUrl;
 
   return `${clientUrl.replace(/\/$/, "")}/chat/${roomId}`;
 }

@@ -12,7 +12,7 @@ services:
       - key: CLIENT_URL
         sync: false
       - key: PUBLIC_CLIENT_URL
-        sync: false
+        value: https://temptalk-client.onrender.com
       - key: CORS_ORIGIN
         sync: false
       - key: ROOM_TTL_MINUTES
@@ -45,6 +45,8 @@ services:
         value: 50
       - key: VITE_APK_URL
         value: https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.apk
+      - key: VITE_PUBLIC_CLIENT_URL
+        value: https://temptalk-client.onrender.com
     routes:
       - type: rewrite
         source: /*

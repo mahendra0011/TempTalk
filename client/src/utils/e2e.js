@@ -114,8 +114,14 @@ export function inviteSecretFromHash(hash = "") {
   return params.get("secret") || params.get("roomSecret") || params.get("s") || "";
 }
 
-export function appendInviteKey(url, key, secret = "") {
-  if (!key && !secret) {
+export function inviteApiFromHash(hash = "") {
+  const clean = String(hash || "").replace(/^#/, "");
+  const params = new URLSearchParams(clean);
+  return params.get("api") || params.get("apiUrl") || "";
+}
+
+export function appendInviteKey(url, key, secret = "", apiUrl = "") {
+  if (!key && !secret && !apiUrl) {
     return url;
   }
 
@@ -130,6 +136,10 @@ export function appendInviteKey(url, key, secret = "") {
     params.set("secret", secret);
   }
 
+  if (apiUrl) {
+    params.set("api", apiUrl);
+  }
+
   target.hash = params.toString();
   return target.toString();
 }
@@ -138,7 +148,7 @@ export function parseRoomInvite(value) {
   const raw = String(value || "").trim();
 
   if (!raw) {
-    return { roomId: "", key: "", secret: "" };
+    return { roomId: "", key: "", secret: "", apiUrl: "" };
   }
 
   try {
@@ -149,7 +159,8 @@ export function parseRoomInvite(value) {
       return {
         roomId: decodeURIComponent(match[1]),
         key: inviteKeyFromHash(parsed.hash),
-        secret: inviteSecretFromHash(parsed.hash)
+        secret: inviteSecretFromHash(parsed.hash),
+        apiUrl: inviteApiFromHash(parsed.hash)
       };
     }
   } catch {
@@ -160,6 +171,7 @@ export function parseRoomInvite(value) {
   return {
     roomId: roomId.trim(),
     key: inviteKeyFromHash(hash ? `#${hash}` : ""),
-    secret: inviteSecretFromHash(hash ? `#${hash}` : "")
+    secret: inviteSecretFromHash(hash ? `#${hash}` : ""),
+    apiUrl: inviteApiFromHash(hash ? `#${hash}` : "")
   };
 }

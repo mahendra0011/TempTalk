@@ -9,8 +9,23 @@ function escapeRegExp(value) {
 }
 
 function getHosts() {
+  const publicClientUrl = process.env.VITE_PUBLIC_CLIENT_URL || "";
+  let publicHost = "";
+
+  try {
+    publicHost = publicClientUrl ? new URL(publicClientUrl).host : "";
+  } catch {
+    publicHost = "";
+  }
+
   const raw = process.env.ANDROID_APP_LINK_HOSTS || process.env.VITE_APP_LINK_HOSTS || defaultHosts.join(",");
-  return [...new Set(raw.split(",").map((host) => host.trim().toLowerCase()).filter(Boolean))];
+  return [
+    ...new Set(
+      [publicHost, ...raw.split(",")]
+        .map((host) => host.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  ];
 }
 
 function intentFilterForHost(host) {

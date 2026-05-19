@@ -85,6 +85,7 @@ CORS_ORIGIN=https://your-client.onrender.com
 VITE_API_URL=https://your-api.onrender.com
 VITE_MAX_ATTACHMENT_MB=50
 VITE_APK_URL=https://your-host/TempTalk.apk
+VITE_PUBLIC_CLIENT_URL=https://your-client.onrender.com
 VITE_APP_LINK_HOSTS=temptalk-client.onrender.com
 ```
 

@@ -26,7 +26,7 @@ import IconButton from "../components/IconButton.jsx";
 import QrModal from "../components/QrModal.jsx";
 import StatusRail from "../components/StatusRail.jsx";
 import { useInviteQr } from "../hooks/useInviteQr.js";
-import { socket } from "../socket/socket.js";
+import { API_URL, socket } from "../socket/socket.js";
 import { getRoom } from "../utils/api.js";
 import {
   appendInviteKey,
@@ -37,6 +37,7 @@ import {
   inviteSecretFromHash
 } from "../utils/e2e.js";
 import { getIdentity } from "../utils/identity.js";
+import { buildRoomInviteUrl } from "../utils/inviteLinks.js";
 
 function secretKey(roomId) {
   return `temptalk:${roomId}:secret`;
@@ -129,12 +130,8 @@ export default function Chat() {
   const fileInputRef = useRef(null);
 
   const inviteUrl = useMemo(() => {
-    if (location.state?.inviteUrl) {
-      return appendInviteKey(location.state.inviteUrl, roomKey, roomSecret);
-    }
-
-    return appendInviteKey(`${window.location.origin}/chat/${roomId}`, roomKey, roomSecret);
-  }, [location.state, roomId, roomKey, roomSecret]);
+    return appendInviteKey(buildRoomInviteUrl(roomId), roomKey, roomSecret, API_URL);
+  }, [roomId, roomKey, roomSecret]);
   const qr = useInviteQr(inviteUrl);
   const ownName = username || aliasInput || initialIdentity.username;
   const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
@@ -342,7 +339,14 @@ export default function Chat() {
         );
       } catch (err) {
         if (active) {
-          navigate("/ended", { replace: true, state: { roomId } });
+          setJoining(false);
+
+          if (err.status === 404) {
+            navigate("/ended", { replace: true, state: { roomId } });
+            return;
+          }
+
+          setError("Backend unavailable. Check the API URL/deployment and try again.");
         }
       }
     }
