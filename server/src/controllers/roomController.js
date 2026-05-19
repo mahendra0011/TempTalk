@@ -14,15 +14,27 @@ function buildPublicUrl(req, roomId) {
 export async function createRoomHandler(req, res, next) {
   try {
     const mode = req.body?.mode === "group" ? "group" : "private";
+    const roomIdInput = String(req.body?.roomId || "").trim();
+    const roomId = roomIdInput ? sanitizeRoomId(roomIdInput) : null;
     const secret = sanitizeSecret(req.body?.secret);
     const maxPeers = Number(req.body?.maxPeers);
 
-    if (mode === "group" && !secret) {
-      res.status(400).json({ message: "Secret key required for group chat." });
+    if (roomIdInput && !roomId) {
+      res.status(400).json({ message: "Room ID must be 4-24 letters, numbers, dashes, or underscores." });
       return;
     }
 
-    const room = await createRoom({ mode, secret, maxPeers });
+    if (!roomId) {
+      res.status(400).json({ message: "Room ID required." });
+      return;
+    }
+
+    if (!secret) {
+      res.status(400).json({ message: "Secret key required." });
+      return;
+    }
+
+    const room = await createRoom({ roomId, mode, secret, maxPeers });
 
     res.status(201).json({
       roomId: room.roomId,

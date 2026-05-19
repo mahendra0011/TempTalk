@@ -19,17 +19,26 @@ export default function Home() {
   const [joinSecret, setJoinSecret] = useState("");
   const [joinKey, setJoinKey] = useState("");
   const [activeAction, setActiveAction] = useState("create-room");
-  const [secret, setSecret] = useState("");
+  const [roomId, setRoomId] = useState("");
+  const [roomSecret, setRoomSecret] = useState("");
+  const [groupRoomId, setGroupRoomId] = useState("");
+  const [groupSecret, setGroupSecret] = useState("");
   const [maxPeers, setMaxPeers] = useState(8);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const mode = activeAction === "create-group" ? "group" : "private";
 
   async function handleCreate() {
-    const cleanSecret = secret.trim();
+    const cleanRoomId = (mode === "group" ? groupRoomId : roomId).trim();
+    const cleanSecret = (mode === "group" ? groupSecret : roomSecret).trim();
 
-    if (mode === "group" && !cleanSecret) {
-      setError("Group secret key required.");
+    if (!cleanRoomId) {
+      setError("Room ID required.");
+      return;
+    }
+
+    if (!cleanSecret) {
+      setError("Secret key required.");
       return;
     }
 
@@ -38,6 +47,7 @@ export default function Home() {
 
     try {
       const room = await createRoom({
+        roomId: cleanRoomId,
         mode,
         secret: cleanSecret,
         maxPeers
@@ -151,7 +161,30 @@ export default function Home() {
                   <Fingerprint size={18} />
                   Create Room
                 </span>
-                <small>Start a one-to-one encrypted private room and share the invite link.</small>
+                <small>Set a room ID and secret key, then share the encrypted invite link.</small>
+              </div>
+              <div className="secret-stack">
+                <div className="join-row">
+                  <DoorOpen size={19} />
+                  <input
+                    aria-label="Create room ID"
+                    value={roomId}
+                    maxLength={24}
+                    onChange={(event) => setRoomId(event.target.value)}
+                    placeholder="Room ID e.g. night-42"
+                  />
+                </div>
+                <div className="join-row">
+                  <LockKeyhole size={19} />
+                  <input
+                    aria-label="Create room secret key"
+                    value={roomSecret}
+                    maxLength={64}
+                    onChange={(event) => setRoomSecret(event.target.value)}
+                    placeholder="Secret key"
+                    type="password"
+                  />
+                </div>
               </div>
               <button className="primary-action" type="button" onClick={handleCreate} disabled={creating}>
                 {creating ? <Loader2 className="spin" size={20} /> : <CirclePlus size={20} />}
@@ -167,16 +200,27 @@ export default function Home() {
                   <UsersRound size={18} />
                   Create Group
                 </span>
-                <small>Create a secret encrypted room for multiple members.</small>
+                <small>Set a group room ID and secret key for multiple members.</small>
               </div>
               <div className="secret-stack">
                 <div className="join-row">
+                  <DoorOpen size={19} />
+                  <input
+                    aria-label="Create group room ID"
+                    value={groupRoomId}
+                    maxLength={24}
+                    onChange={(event) => setGroupRoomId(event.target.value)}
+                    placeholder="Group room ID e.g. squad-7"
+                  />
+                </div>
+                <div className="join-row">
                   <LockKeyhole size={19} />
                   <input
-                    value={secret}
+                    aria-label="Create group secret key"
+                    value={groupSecret}
                     maxLength={64}
-                    onChange={(event) => setSecret(event.target.value)}
-                    placeholder="Group secret key"
+                    onChange={(event) => setGroupSecret(event.target.value)}
+                    placeholder="Secret key"
                     type="password"
                   />
                 </div>
@@ -206,7 +250,7 @@ export default function Home() {
                   <DoorOpen size={18} />
                   Enter Room
                 </span>
-                <small>Paste the full invite link for encrypted access, or enter the room ID and key.</small>
+                <small>Paste the invite link, or enter the room ID and secret key.</small>
               </div>
               <div className="join-row">
                 <DoorOpen size={19} />
@@ -230,7 +274,7 @@ export default function Home() {
                   value={joinSecret}
                   maxLength={64}
                   onChange={(event) => setJoinSecret(event.target.value)}
-                  placeholder="Room secret if required"
+                  placeholder="Secret key"
                   type="password"
                 />
                 <span className="join-spacer" />

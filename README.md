@@ -26,6 +26,7 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 
 - Private one-to-one temporary rooms
 - Secret group rooms with a required room key
+- Custom room IDs and secret keys for create room, create group, and enter room flows
 - Real-time messages, typing, online status, and QR invite
 - Browser-side end-to-end encryption for message text in new invite links
 - Replies, reactions, edit message, delete message

@@ -136,9 +136,15 @@ async function roomExists(roomId) {
 }
 
 export async function createRoom(options = {}) {
-  let roomId = nanoid(6);
+  let roomId = String(options.roomId || "").trim() || nanoid(6);
 
-  while (await roomExists(roomId)) {
+  if (options.roomId && (await roomExists(roomId))) {
+    const error = new Error("Room ID already exists.");
+    error.status = 409;
+    throw error;
+  }
+
+  while (!options.roomId && (await roomExists(roomId))) {
     roomId = nanoid(6);
   }
 
@@ -148,7 +154,7 @@ export async function createRoom(options = {}) {
     roomId,
     mode,
     maxPeers: clampPeers(options.maxPeers, mode),
-    secretHash: mode === "group" && secret ? hashSecret(secret) : null,
+    secretHash: secret ? hashSecret(secret) : null,
     users: [],
     active: true,
     expiresAt: dateAfter(roomTtlMs),
