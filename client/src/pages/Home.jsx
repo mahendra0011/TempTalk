@@ -2,6 +2,8 @@ import {
   ArrowRight,
   CirclePlus,
   DoorOpen,
+  Eye,
+  EyeOff,
   Fingerprint,
   Loader2,
   LockKeyhole,
@@ -43,7 +45,36 @@ export default function Home() {
   const [maxPeers, setMaxPeers] = useState(8);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  const [visibleSecrets, setVisibleSecrets] = useState({
+    room: false,
+    group: false,
+    joinSecret: false,
+    joinKey: false
+  });
   const mode = activeAction === "create-group" ? "group" : "private";
+
+  function toggleSecretVisibility(key) {
+    setVisibleSecrets((current) => ({
+      ...current,
+      [key]: !current[key]
+    }));
+  }
+
+  function secretToggle(key, label) {
+    const visible = visibleSecrets[key];
+
+    return (
+      <button
+        className="secret-toggle"
+        type="button"
+        aria-label={visible ? `Hide ${label}` : `Show ${label}`}
+        title={visible ? `Hide ${label}` : `Show ${label}`}
+        onClick={() => toggleSecretVisibility(key)}
+      >
+        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    );
+  }
 
   function generateCredentials(kind) {
     if (kind === "group") {
@@ -220,8 +251,9 @@ export default function Home() {
                     maxLength={64}
                     onChange={(event) => setRoomSecret(event.target.value)}
                     placeholder="Secret key"
-                    type="password"
+                    type={visibleSecrets.room ? "text" : "password"}
                   />
+                  {secretToggle("room", "room secret key")}
                 </div>
               </div>
               <button className="primary-action" type="button" onClick={handleCreate} disabled={creating}>
@@ -266,8 +298,9 @@ export default function Home() {
                     maxLength={64}
                     onChange={(event) => setGroupSecret(event.target.value)}
                     placeholder="Secret key"
-                    type="password"
+                    type={visibleSecrets.group ? "text" : "password"}
                   />
+                  {secretToggle("group", "group secret key")}
                 </div>
                 <label className="range-row">
                   <span>Members</span>
@@ -320,9 +353,9 @@ export default function Home() {
                   maxLength={64}
                   onChange={(event) => setJoinSecret(event.target.value)}
                   placeholder="Secret key"
-                  type="password"
+                  type={visibleSecrets.joinSecret ? "text" : "password"}
                 />
-                <span className="join-spacer" />
+                {secretToggle("joinSecret", "room secret key")}
               </div>
               <div className="join-row">
                 <LockKeyhole size={19} />
@@ -332,9 +365,9 @@ export default function Home() {
                   maxLength={128}
                   onChange={(event) => setJoinKey(event.target.value)}
                   placeholder="Encryption key if link is missing it"
-                  type="password"
+                  type={visibleSecrets.joinKey ? "text" : "password"}
                 />
-                <span className="join-spacer" />
+                {secretToggle("joinKey", "encryption key")}
               </div>
             </form>
           ) : null}

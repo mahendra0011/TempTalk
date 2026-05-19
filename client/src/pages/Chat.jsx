@@ -1,6 +1,8 @@
 import {
   Copy,
   DoorOpen,
+  Eye,
+  EyeOff,
   FileText,
   Image,
   KeyRound,
@@ -116,6 +118,7 @@ export default function Chat() {
   const [sendingFile, setSendingFile] = useState(false);
   const [privacyBlurred, setPrivacyBlurred] = useState(false);
   const [privacyNotice, setPrivacyNotice] = useState("");
+  const [visibleSecrets, setVisibleSecrets] = useState({ room: false, key: false });
   const typingTimerRef = useRef(null);
   const messageEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -131,6 +134,29 @@ export default function Chat() {
   const ownName = username || aliasInput || initialIdentity.username;
   const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
   const maxFileBytes = maxFileMb * 1024 * 1024;
+
+  function toggleSecretVisibility(key) {
+    setVisibleSecrets((current) => ({
+      ...current,
+      [key]: !current[key]
+    }));
+  }
+
+  function secretToggle(key, label) {
+    const visible = visibleSecrets[key];
+
+    return (
+      <button
+        className="secret-toggle"
+        type="button"
+        aria-label={visible ? `Hide ${label}` : `Show ${label}`}
+        title={visible ? `Hide ${label}` : `Show ${label}`}
+        onClick={() => toggleSecretVisibility(key)}
+      >
+        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    );
+  }
 
   useEffect(() => {
     function showPrivacyNotice(message) {
@@ -733,25 +759,27 @@ export default function Chat() {
                     placeholder="Anonymous alias"
                   />
                 </label>
-                <label>
+                <label className="secret-label">
                   <LockKeyhole size={17} />
                   <input
                     value={secretInput}
                     maxLength={64}
                     onChange={(event) => setSecretInput(event.target.value)}
                     placeholder={roomMeta.requiresSecret ? "Room secret key" : "Secret key if required"}
-                    type="password"
+                    type={visibleSecrets.room ? "text" : "password"}
                   />
+                  {secretToggle("room", "room secret key")}
                 </label>
-                <label>
+                <label className="secret-label">
                   <KeyRound size={17} />
                   <input
                     value={keyInput}
                     maxLength={128}
                     onChange={(event) => setKeyInput(event.target.value)}
                     placeholder="Encryption key from invite link"
-                    type="password"
+                    type={visibleSecrets.key ? "text" : "password"}
                   />
+                  {secretToggle("key", "encryption key")}
                 </label>
                 <button type="submit">
                   <DoorOpen size={18} />

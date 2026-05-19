@@ -1134,6 +1134,10 @@ button:disabled {
   color: #36ff88;
 }
 
+.entry-gate label.secret-label {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
 .secret-gate button,
 .entry-gate button {
   height: 44px;
@@ -1147,6 +1151,29 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.join-row .secret-toggle,
+.entry-gate .secret-toggle {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(196, 255, 220, 0.14);
+  border-radius: 8px;
+  color: #ecfff5;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.join-row .secret-toggle:hover,
+.join-row .secret-toggle:focus-visible,
+.entry-gate .secret-toggle:hover,
+.entry-gate .secret-toggle:focus-visible {
+  color: #031008;
+  background: #36ff88;
 }
 
 .composer {
