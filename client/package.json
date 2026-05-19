@@ -12,6 +12,8 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "@capacitor/app": "^6.0.3",
+    "@capacitor/core": "^6.2.1",
     "@vitejs/plugin-react": "^4.3.4",
     "lucide-react": "^0.469.0",
     "qrcode": "^1.5.4",

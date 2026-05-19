@@ -65,6 +65,10 @@ jobs:
         working-directory: client
         run: npx cap sync android
 
+      - name: Configure Android deep links
+        working-directory: client
+        run: node scripts/configure-android-deeplinks.mjs
+
       - name: Apply Android app icon
         working-directory: client
         run: node scripts/apply-android-branding.mjs

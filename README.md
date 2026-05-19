@@ -47,6 +47,7 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 - Custom room IDs and secret keys for create room, create group, and enter room flows
 - Real-time messages, typing, online status, and QR invite
 - Invite links unlock the room automatically, so guests only enter an anonymous name
+- Android invite links try to open the installed TempTalk app before falling back to the website
 - Browser-side encryption for message text using the room secret or invite key
 - Replies, reactions, edit message, delete message
 - Sent and seen receipts
@@ -84,7 +85,10 @@ CORS_ORIGIN=https://your-client.onrender.com
 VITE_API_URL=https://your-api.onrender.com
 VITE_MAX_ATTACHMENT_MB=50
 VITE_APK_URL=https://your-host/TempTalk.apk
+VITE_APP_LINK_HOSTS=temptalk-client.onrender.com
 ```
+
+For APK builds, set `ANDROID_APP_LINK_HOSTS` in GitHub Actions if your public client domain is different.
 
 In Render dashboard, add this static-site rewrite if you are not using `render.yaml`:
 
