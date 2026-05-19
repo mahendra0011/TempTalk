@@ -31,6 +31,11 @@ uploads it to that release whenever client code is pushed to `master`. Set repos
 `VITE_API_URL` before building the APK if your Render API URL is different from
 `https://temptalk-api.onrender.com`.
 
+Installed Android users can open invite links directly in the TempTalk APK. The workflow injects Android
+App Link intent filters into the APK, reads the APK signing SHA256 fingerprint after every build, and commits
+`client/public/.well-known/assetlinks.json` so your public client domain can verify ownership. After a new APK
+build, let the follow-up `assetlinks.json` commit deploy to Render before testing automatic app opening.
+
 ## Environment
 
 Copy `server/.env.example` to `server/.env`.
@@ -90,6 +95,8 @@ VITE_APP_LINK_HOSTS=temptalk-client.onrender.com
 ```
 
 For APK builds, set `ANDROID_APP_LINK_HOSTS` in GitHub Actions if your public client domain is different.
+Each listed host must serve the deployed frontend, including `/.well-known/assetlinks.json`, for Android
+to open HTTPS invite links in the installed app automatically.
 
 In Render dashboard, add this static-site rewrite if you are not using `render.yaml`:
 

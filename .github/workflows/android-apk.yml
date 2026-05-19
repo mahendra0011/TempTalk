@@ -85,6 +85,14 @@ jobs:
         working-directory: client/android
         run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/TempTalk.apk
 
+      - name: Update Android app links fingerprint
+        working-directory: client
+        run: |
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          RAW_DIGEST=$("$APKSIGNER" verify --print-certs android/app/build/outputs/apk/debug/TempTalk.apk | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1)
+          CERT_FINGERPRINT=$(echo "$RAW_DIGEST" | tr '[:lower:]' '[:upper:]' | sed 's/../&:/g;s/:$//')
+          ANDROID_CERT_SHA256_FINGERPRINTS="$CERT_FINGERPRINT" node scripts/generate-android-assetlinks.mjs
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
@@ -97,3 +105,16 @@ jobs:
         run: |
           gh release view apk-latest >/dev/null 2>&1 || gh release create apk-latest --title "TempTalk APK" --notes "Latest installable Android APK build for TempTalk."
           gh release upload apk-latest client/android/app/build/outputs/apk/debug/TempTalk.apk --clobber
+
+      - name: Commit Android app links fingerprint
+        run: |
+          if git diff --quiet -- client/public/.well-known/assetlinks.json; then
+            echo "assetlinks.json already matches the APK signing certificate."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add client/public/.well-known/assetlinks.json
+          git commit -m "chore: update Android app links fingerprint [skip ci]"
+          git push

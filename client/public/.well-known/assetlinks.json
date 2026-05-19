@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.temptalk.app",
+      "sha256_cert_fingerprints": [
+        "2A:83:89:6A:37:82:CD:79:15:5B:C2:B8:4A:6A:E4:FA:78:97:EA:66:69:84:6B:01:74:55:56:A7:41:74:A1:F6"
+      ]
+    }
+  }
+]
