@@ -227,6 +227,21 @@ button:disabled {
   margin-top: 26px;
 }
 
+.secondary-action {
+  min-height: 40px;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid rgba(54, 255, 136, 0.24);
+  border-radius: 8px;
+  color: #36ff88;
+  background: rgba(54, 255, 136, 0.08);
+  font-weight: 800;
+}
+
 .join-form {
   display: grid;
   gap: 10px;
@@ -261,6 +276,26 @@ button:disabled {
   color: rgba(236, 255, 245, 0.56);
   font-size: 0.8rem;
   line-height: 1.45;
+}
+
+.generator-row {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid rgba(196, 255, 220, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.generator-row small {
+  min-width: 0;
+  color: rgba(236, 255, 245, 0.58);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .join-form label {
@@ -1550,6 +1585,19 @@ button:disabled {
     align-content: center;
     padding: 0 14px;
     text-align: left;
+  }
+
+  .generator-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .generator-row small {
+    text-align: left;
+  }
+
+  .secondary-action {
+    width: 100%;
   }
 
   .chat-frame {

@@ -5,6 +5,7 @@ import {
   Fingerprint,
   Loader2,
   LockKeyhole,
+  Sparkles,
   Terminal,
   UsersRound
 } from "lucide-react";
@@ -12,6 +13,22 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createRoom } from "../utils/api.js";
 import { appendInviteKey, generateRoomKey, parseRoomInvite } from "../utils/e2e.js";
+
+const ROOM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+const SECRET_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function randomString(chars, length) {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(bytes, (byte) => chars[byte % chars.length]).join("");
+}
+
+function randomRoomId(prefix) {
+  return `${prefix}-${randomString(ROOM_ID_CHARS, 6)}`;
+}
+
+function randomSecret() {
+  return `${randomString(SECRET_CHARS, 4)}-${randomString(SECRET_CHARS, 4)}-${randomString(SECRET_CHARS, 4)}`;
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -27,6 +44,20 @@ export default function Home() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const mode = activeAction === "create-group" ? "group" : "private";
+
+  function generateCredentials(kind) {
+    if (kind === "group") {
+      setGroupRoomId(randomRoomId("group"));
+      setGroupSecret(randomSecret());
+      setActiveAction("create-group");
+    } else {
+      setRoomId(randomRoomId("room"));
+      setRoomSecret(randomSecret());
+      setActiveAction("create-room");
+    }
+
+    setError("");
+  }
 
   async function handleCreate() {
     const cleanRoomId = (mode === "group" ? groupRoomId : roomId).trim();
@@ -163,6 +194,13 @@ export default function Home() {
                 </span>
                 <small>Set a room ID and secret key, then share the encrypted invite link.</small>
               </div>
+              <div className="generator-row">
+                <button className="secondary-action" type="button" onClick={() => generateCredentials("room")}>
+                  <Sparkles size={17} />
+                  <span>Generate</span>
+                </button>
+                <small>Random Room ID + Secret Key</small>
+              </div>
               <div className="secret-stack">
                 <div className="join-row">
                   <DoorOpen size={19} />
@@ -201,6 +239,13 @@ export default function Home() {
                   Create Group
                 </span>
                 <small>Set a group room ID and secret key for multiple members.</small>
+              </div>
+              <div className="generator-row">
+                <button className="secondary-action" type="button" onClick={() => generateCredentials("group")}>
+                  <Sparkles size={17} />
+                  <span>Generate</span>
+                </button>
+                <small>Random Group ID + Secret Key</small>
               </div>
               <div className="secret-stack">
                 <div className="join-row">
