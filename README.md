@@ -20,9 +20,16 @@ TempTalk is configured as a PWA, so Android users can open the deployed site in 
 **Install app** or **Add to Home screen**. This keeps the same React/Vite frontend and Node/Express
 backend. For a Play Store APK/AAB later, wrap the same `client/` app with Capacitor.
 
-The home UI also has a **Download APK** button. It downloads `VITE_APK_URL` when that env var is set,
-or `/TempTalk.apk` by default. To enable the button on Render, upload the real APK as
-`client/public/TempTalk.apk` before deploying, or set `VITE_APK_URL` to a hosted APK/release asset.
+The home UI also has a **Download APK** button. By default it downloads:
+
+```txt
+https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.apk
+```
+
+The GitHub Actions workflow at `.github/workflows/android-apk.yml` builds a Capacitor Android APK and
+uploads it to that release whenever client code is pushed to `master`. Set repository variable or secret
+`VITE_API_URL` before building the APK if your Render API URL is different from
+`https://temptalk-api.onrender.com`.
 
 ## Environment
 

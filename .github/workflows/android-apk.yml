@@ -1,0 +1,81 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/android-apk.yml"
+      - "client/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build TempTalk APK
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL || secrets.VITE_API_URL || 'https://temptalk-api.onrender.com' }}
+      VITE_APK_URL: https://github.com/${{ github.repository }}/releases/download/apk-latest/TempTalk.apk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci --include=dev --no-audit --fund=false
+
+      - name: Build web app
+        working-directory: client
+        run: npm run build
+
+      - name: Install Capacitor packaging tools
+        working-directory: client
+        run: npm install --no-save --package-lock=false @capacitor/core@latest @capacitor/android@latest @capacitor/cli@latest
+
+      - name: Create Android project
+        working-directory: client
+        run: npx cap add android
+
+      - name: Sync Android assets
+        working-directory: client
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: client/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK
+        working-directory: client/android
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/TempTalk.apk
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TempTalk.apk
+          path: client/android/app/build/outputs/apk/debug/TempTalk.apk
+
+      - name: Publish APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view apk-latest >/dev/null 2>&1 || gh release create apk-latest --title "TempTalk APK" --notes "Latest installable Android APK build for TempTalk."
+          gh release upload apk-latest client/android/app/build/outputs/apk/debug/TempTalk.apk --clobber

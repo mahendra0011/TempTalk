@@ -43,6 +43,8 @@ services:
         sync: false
       - key: VITE_MAX_ATTACHMENT_MB
         value: 50
+      - key: VITE_APK_URL
+        value: https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.apk
     routes:
       - type: rewrite
         source: /*
