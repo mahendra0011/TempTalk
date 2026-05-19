@@ -1,4 +1,16 @@
-import { CheckCheck, Download, FileText, Music, Pencil, Reply, Trash2, Video } from "lucide-react";
+import {
+  CheckCheck,
+  Download,
+  FileText,
+  Heart,
+  Music,
+  Pencil,
+  Reply,
+  SmilePlus,
+  Trash2,
+  Video
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { API_URL } from "../socket/socket.js";
 
 const reactionChoices = ["\u{1F44D}", "\u{2764}\u{FE0F}", "\u{1F525}", "\u{1F602}", "\u{1F440}"];
@@ -83,6 +95,10 @@ export default function ChatBubble({
   onReply,
   readStatus
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [heartBurst, setHeartBurst] = useState(false);
+  const lastTapRef = useRef(0);
+  const burstTimerRef = useRef(null);
   const time = message.createdAt
     ? new Intl.DateTimeFormat(undefined, {
         hour: "2-digit",
@@ -90,10 +106,84 @@ export default function ChatBubble({
       }).format(new Date(message.createdAt))
     : "";
   const deleted = Boolean(message.deletedAt);
+  const activeReactions = (message.reactions || []).filter((reaction) => reaction.users?.length);
+
+  useEffect(() => {
+    return () => window.clearTimeout(burstTimerRef.current);
+  }, []);
+
+  function chooseReaction(emoji) {
+    if (deleted) {
+      return;
+    }
+
+    onReact(message, emoji);
+    setPickerOpen(false);
+  }
+
+  function sendHeartReaction() {
+    chooseReaction("\u{2764}\u{FE0F}");
+    setHeartBurst(true);
+    window.clearTimeout(burstTimerRef.current);
+    burstTimerRef.current = window.setTimeout(() => setHeartBurst(false), 620);
+  }
+
+  function isInteractiveTarget(target) {
+    return target instanceof Element && target.closest("button, a, video, audio");
+  }
+
+  function handleBubblePointerUp(event) {
+    if (event.pointerType === "mouse" || deleted) {
+      return;
+    }
+
+    if (isInteractiveTarget(event.target)) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastTapRef.current < 320) {
+      sendHeartReaction();
+      lastTapRef.current = 0;
+      return;
+    }
+
+    lastTapRef.current = now;
+  }
 
   return (
     <div className={`message-row ${own ? "message-row-own" : ""}`}>
-      <div className={`message-bubble ${own ? "message-bubble-own" : ""} ${deleted ? "message-deleted" : ""}`}>
+      <div
+        className={`message-bubble ${own ? "message-bubble-own" : ""} ${deleted ? "message-deleted" : ""}`}
+        onDoubleClick={(event) => {
+          if (!deleted && !isInteractiveTarget(event.target)) {
+            event.preventDefault();
+            sendHeartReaction();
+          }
+        }}
+        onPointerUp={handleBubblePointerUp}
+      >
+        {!deleted ? (
+          <div
+            className={`reaction-picker ${own ? "reaction-picker-own" : ""} ${pickerOpen ? "reaction-picker-open" : ""}`}
+            aria-label="Quick reactions"
+          >
+            {reactionChoices.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                aria-label={`React ${emoji}`}
+                title={`React ${emoji}`}
+                onClick={() => chooseReaction(emoji)}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {heartBurst ? <div className="heart-burst" aria-hidden="true">{"\u{2764}\u{FE0F}"}</div> : null}
+
         <div className="message-meta">
           <span>{own ? "You" : message.sender}</span>
           <span>{message.editedAt && !deleted ? "edited " : ""}{time}</span>
@@ -114,6 +204,17 @@ export default function ChatBubble({
 
         {!deleted ? (
           <div className="message-tools" aria-label="Message actions">
+            <button
+              type="button"
+              aria-label="React"
+              title="React"
+              onClick={() => setPickerOpen((current) => !current)}
+            >
+              <SmilePlus size={14} />
+            </button>
+            <button type="button" aria-label="Heart" title="Heart" onClick={sendHeartReaction}>
+              <Heart size={14} />
+            </button>
             <button type="button" aria-label="Reply" title="Reply" onClick={() => onReply(message)}>
               <Reply size={14} />
             </button>
@@ -130,26 +231,21 @@ export default function ChatBubble({
           </div>
         ) : null}
 
-        {!deleted ? (
-          <div className="reaction-strip" aria-label="Reactions">
-            {reactionChoices.map((emoji) => {
-              const reaction = message.reactions?.find((item) => item.emoji === emoji);
-              const count = reaction?.users?.length || 0;
-
-              return (
-                <button
-                  className={count ? "has-reaction" : ""}
-                  key={emoji}
-                  type="button"
-                  aria-label={`React ${emoji}`}
-                  title={`React ${emoji}`}
-                  onClick={() => onReact(message, emoji)}
-                >
-                  <span>{emoji}</span>
-                  {count ? <strong>{count}</strong> : null}
-                </button>
-              );
-            })}
+        {!deleted && activeReactions.length ? (
+          <div className="reaction-summary" aria-label="Message reactions">
+            {activeReactions.map((reaction) => (
+              <button
+                className="reaction-pill"
+                key={reaction.emoji}
+                type="button"
+                aria-label={`React ${reaction.emoji}`}
+                title={`React ${reaction.emoji}`}
+                onClick={() => chooseReaction(reaction.emoji)}
+              >
+                <span>{reaction.emoji}</span>
+                <strong>{reaction.users.length}</strong>
+              </button>
+            ))}
           </div>
         ) : null}
 

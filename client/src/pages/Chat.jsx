@@ -621,8 +621,16 @@ export default function Chat() {
           <section className={`message-panel ${privacyBlurred ? "message-panel-protected" : ""}`}>
             {showEntryGate ? (
               <form className="center-state entry-gate" onSubmit={enterRoom}>
-                <DoorOpen size={32} />
-                <p>Enter Room</p>
+                <div className="entry-icon">
+                  <DoorOpen size={30} />
+                </div>
+                <span className="entry-kicker">{roomMeta.mode === "group" ? "Secret group invite" : "Private invite"}</span>
+                <h2>Enter Room</h2>
+                <p>Choose your anonymous name before joining this TempTalk room.</p>
+                <div className="entry-room-id">
+                  <span>Room ID</span>
+                  <strong>{roomId}</strong>
+                </div>
                 <label>
                   <UserRound size={17} />
                   <input
@@ -642,7 +650,10 @@ export default function Chat() {
                     type="password"
                   />
                 </label>
-                <button type="submit">Enter Room</button>
+                <button type="submit">
+                  <DoorOpen size={18} />
+                  <span>Enter Room</span>
+                </button>
               </form>
             ) : joining ? (
               <div className="center-state">

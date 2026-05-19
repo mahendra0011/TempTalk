@@ -150,24 +150,33 @@ export default function Home() {
             <span>{mode === "group" ? "Create Secret Group" : "Create Room"}</span>
           </button>
 
-          <form className="join-form" onSubmit={handleJoin}>
-            <label htmlFor="roomId">Room ID</label>
+          <form className="join-form join-room-card" onSubmit={handleJoin}>
+            <div className="join-heading">
+              <span>
+                <DoorOpen size={18} />
+                Enter Room
+              </span>
+              <small>Paste the room ID from an invite link.</small>
+            </div>
             <div className="join-row">
               <DoorOpen size={19} />
               <input
                 id="roomId"
+                aria-label="Room ID"
                 value={joinId}
                 maxLength={24}
                 onChange={(event) => setJoinId(event.target.value)}
-                placeholder="8sk2jd"
+                placeholder="Room ID e.g. 8sk2jd"
               />
-              <button type="submit" aria-label="Join room" title="Join room">
+              <button className="join-submit" type="submit" aria-label="Enter room" title="Enter room">
+                <span>Enter</span>
                 <ArrowRight size={20} />
               </button>
             </div>
             <div className="join-row">
               <LockKeyhole size={19} />
               <input
+                aria-label="Room secret key"
                 value={joinSecret}
                 maxLength={64}
                 onChange={(event) => setJoinSecret(event.target.value)}
