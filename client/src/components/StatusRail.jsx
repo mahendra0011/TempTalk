@@ -1,6 +1,6 @@
-import { Radio, ShieldCheck, TimerReset, UsersRound } from "lucide-react";
+import { LockKeyhole, Radio, ShieldCheck, TimerReset, UsersRound } from "lucide-react";
 
-export default function StatusRail({ onlineCount, expiresAt, connected, maxPeers = 2, mode = "private" }) {
+export default function StatusRail({ onlineCount, expiresAt, connected, maxPeers = 2, mode = "private", encrypted = false }) {
   const expiry = expiresAt
     ? new Intl.DateTimeFormat(undefined, {
         hour: "2-digit",
@@ -23,8 +23,8 @@ export default function StatusRail({ onlineCount, expiresAt, connected, maxPeers
         <span>{expiry}</span>
       </div>
       <div className="status-chip status-chip-guard">
-        <ShieldCheck size={15} />
-        <span>{mode === "group" ? "Secret Group" : "Ephemeral"}</span>
+        {encrypted ? <LockKeyhole size={15} /> : <ShieldCheck size={15} />}
+        <span>{encrypted ? "E2E On" : mode === "group" ? "Secret Group" : "Ephemeral"}</span>
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ const messageSchema = new mongoose.Schema(
     text: {
       type: String,
       default: "",
-      maxlength: 1000
+      maxlength: 8000
     },
     attachment: {
       type: attachmentSchema,

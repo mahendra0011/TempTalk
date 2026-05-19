@@ -9,18 +9,21 @@ import {
   UsersRound
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createRoom } from "../utils/api.js";
+import { appendInviteKey, generateRoomKey, parseRoomInvite } from "../utils/e2e.js";
 
 export default function Home() {
   const navigate = useNavigate();
   const [joinId, setJoinId] = useState("");
   const [joinSecret, setJoinSecret] = useState("");
-  const [mode, setMode] = useState("private");
+  const [joinKey, setJoinKey] = useState("");
+  const [activeAction, setActiveAction] = useState("create-room");
   const [secret, setSecret] = useState("");
   const [maxPeers, setMaxPeers] = useState(8);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  const mode = activeAction === "create-group" ? "group" : "private";
 
   async function handleCreate() {
     const cleanSecret = secret.trim();
@@ -39,15 +42,19 @@ export default function Home() {
         secret: cleanSecret,
         maxPeers
       });
+      const encryptionKey = generateRoomKey();
+      const inviteUrl = appendInviteKey(room.url, encryptionKey);
 
       if (cleanSecret) {
         sessionStorage.setItem(`temptalk:${room.roomId}:secret`, cleanSecret);
       }
+      sessionStorage.setItem(`temptalk:${room.roomId}:e2e-key`, encryptionKey);
 
-      navigate(`/chat/${room.roomId}`, {
+      navigate(`/chat/${room.roomId}#key=${encodeURIComponent(encryptionKey)}`, {
         state: {
-          inviteUrl: room.url,
+          inviteUrl,
           secret: cleanSecret,
+          encryptionKey,
           autoEnter: true
         }
       });
@@ -60,7 +67,10 @@ export default function Home() {
 
   function handleJoin(event) {
     event.preventDefault();
-    const cleanId = joinId.trim();
+    const invite = parseRoomInvite(joinId);
+    const cleanId = invite.roomId.trim();
+    const savedKey = cleanId ? sessionStorage.getItem(`temptalk:${cleanId}:e2e-key`) || "" : "";
+    const encryptionKey = invite.key || joinKey.trim() || savedKey;
 
     if (!cleanId) {
       setError("Room ID required.");
@@ -71,10 +81,17 @@ export default function Home() {
       sessionStorage.setItem(`temptalk:${cleanId}:secret`, joinSecret.trim());
     }
 
-    navigate(`/chat/${cleanId}`, {
+    if (encryptionKey) {
+      sessionStorage.setItem(`temptalk:${cleanId}:e2e-key`, encryptionKey);
+    }
+
+    const chatPath = `/chat/${cleanId}${encryptionKey ? `#key=${encodeURIComponent(encryptionKey)}` : ""}`;
+
+    navigate(chatPath, {
       state: {
         secret: joinSecret.trim(),
-        autoEnter: true
+        encryptionKey,
+        autoEnter: Boolean(encryptionKey)
       }
     });
   }
@@ -100,92 +117,142 @@ export default function Home() {
             <span className="pulse-label">standby</span>
           </div>
 
-          <div className="mode-switch" role="group" aria-label="Room type">
+          <div className="option-switch" role="tablist" aria-label="TempTalk actions">
             <button
-              className={mode === "private" ? "active" : ""}
+              className={activeAction === "create-room" ? "active" : ""}
               type="button"
-              onClick={() => setMode("private")}
+              onClick={() => setActiveAction("create-room")}
             >
               <Fingerprint size={17} />
-              <span>Private</span>
+              <span>Create Room</span>
             </button>
             <button
-              className={mode === "group" ? "active" : ""}
+              className={activeAction === "create-group" ? "active" : ""}
               type="button"
-              onClick={() => setMode("group")}
+              onClick={() => setActiveAction("create-group")}
             >
               <UsersRound size={17} />
-              <span>Group</span>
+              <span>Create Group</span>
+            </button>
+            <button
+              className={activeAction === "enter-room" ? "active" : ""}
+              type="button"
+              onClick={() => setActiveAction("enter-room")}
+            >
+              <DoorOpen size={17} />
+              <span>Enter Room</span>
             </button>
           </div>
 
-          {mode === "group" ? (
-            <div className="secret-stack">
+          {activeAction === "create-room" ? (
+            <section className="option-card">
+              <div className="join-heading">
+                <span>
+                  <Fingerprint size={18} />
+                  Create Room
+                </span>
+                <small>Start a one-to-one encrypted private room and share the invite link.</small>
+              </div>
+              <button className="primary-action" type="button" onClick={handleCreate} disabled={creating}>
+                {creating ? <Loader2 className="spin" size={20} /> : <CirclePlus size={20} />}
+                <span>Create Room</span>
+              </button>
+            </section>
+          ) : null}
+
+          {activeAction === "create-group" ? (
+            <section className="option-card">
+              <div className="join-heading">
+                <span>
+                  <UsersRound size={18} />
+                  Create Group
+                </span>
+                <small>Create a secret encrypted room for multiple members.</small>
+              </div>
+              <div className="secret-stack">
+                <div className="join-row">
+                  <LockKeyhole size={19} />
+                  <input
+                    value={secret}
+                    maxLength={64}
+                    onChange={(event) => setSecret(event.target.value)}
+                    placeholder="Group secret key"
+                    type="password"
+                  />
+                </div>
+                <label className="range-row">
+                  <span>Members</span>
+                  <input
+                    min="3"
+                    max="25"
+                    value={maxPeers}
+                    onChange={(event) => setMaxPeers(Number(event.target.value))}
+                    type="range"
+                  />
+                  <strong>{maxPeers}</strong>
+                </label>
+              </div>
+              <button className="primary-action" type="button" onClick={handleCreate} disabled={creating}>
+                {creating ? <Loader2 className="spin" size={20} /> : <CirclePlus size={20} />}
+                <span>Create Group</span>
+              </button>
+            </section>
+          ) : null}
+
+          {activeAction === "enter-room" ? (
+            <form className="join-form option-card join-room-card" onSubmit={handleJoin}>
+              <div className="join-heading">
+                <span>
+                  <DoorOpen size={18} />
+                  Enter Room
+                </span>
+                <small>Paste the full invite link for encrypted access, or enter the room ID and key.</small>
+              </div>
+              <div className="join-row">
+                <DoorOpen size={19} />
+                <input
+                  id="roomId"
+                  aria-label="Room ID"
+                  value={joinId}
+                  maxLength={180}
+                  onChange={(event) => setJoinId(event.target.value)}
+                  placeholder="Room ID or invite link"
+                />
+                <button className="join-submit" type="submit" aria-label="Enter room" title="Enter room">
+                  <span>Enter</span>
+                  <ArrowRight size={20} />
+                </button>
+              </div>
               <div className="join-row">
                 <LockKeyhole size={19} />
                 <input
-                  value={secret}
+                  aria-label="Room secret key"
+                  value={joinSecret}
                   maxLength={64}
-                  onChange={(event) => setSecret(event.target.value)}
-                  placeholder="Group secret key"
+                  onChange={(event) => setJoinSecret(event.target.value)}
+                  placeholder="Room secret if required"
                   type="password"
                 />
+                <span className="join-spacer" />
               </div>
-              <label className="range-row">
-                <span>Members</span>
+              <div className="join-row">
+                <LockKeyhole size={19} />
                 <input
-                  min="3"
-                  max="25"
-                  value={maxPeers}
-                  onChange={(event) => setMaxPeers(Number(event.target.value))}
-                  type="range"
+                  aria-label="Encryption key"
+                  value={joinKey}
+                  maxLength={128}
+                  onChange={(event) => setJoinKey(event.target.value)}
+                  placeholder="Encryption key if link is missing it"
+                  type="password"
                 />
-                <strong>{maxPeers}</strong>
-              </label>
-            </div>
+                <span className="join-spacer" />
+              </div>
+            </form>
           ) : null}
 
-          <button className="primary-action" type="button" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="spin" size={20} /> : <CirclePlus size={20} />}
-            <span>{mode === "group" ? "Create Secret Group" : "Create Room"}</span>
-          </button>
-
-          <form className="join-form join-room-card" onSubmit={handleJoin}>
-            <div className="join-heading">
-              <span>
-                <DoorOpen size={18} />
-                Enter Room
-              </span>
-              <small>Paste the room ID from an invite link.</small>
-            </div>
-            <div className="join-row">
-              <DoorOpen size={19} />
-              <input
-                id="roomId"
-                aria-label="Room ID"
-                value={joinId}
-                maxLength={24}
-                onChange={(event) => setJoinId(event.target.value)}
-                placeholder="Room ID e.g. 8sk2jd"
-              />
-              <button className="join-submit" type="submit" aria-label="Enter room" title="Enter room">
-                <span>Enter</span>
-                <ArrowRight size={20} />
-              </button>
-            </div>
-            <div className="join-row">
-              <LockKeyhole size={19} />
-              <input
-                aria-label="Room secret key"
-                value={joinSecret}
-                maxLength={64}
-                onChange={(event) => setJoinSecret(event.target.value)}
-                placeholder="Secret key if required"
-                type="password"
-              />
-              <span className="join-spacer" />
-            </div>
-          </form>
+          <Link className="privacy-link" to="/privacy">
+            Privacy Policy
+          </Link>
 
           {error ? <p className="error-text">{error}</p> : null}
         </div>

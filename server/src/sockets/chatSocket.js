@@ -17,6 +17,7 @@ import { sanitizeRoomId, sanitizeText, sanitizeUsername } from "../utils/sanitiz
 
 const roomPresence = new Map();
 const maxPeers = Number(process.env.MAX_ROOM_PEERS || 2);
+const maxMessagePayloadLength = Number(process.env.MAX_MESSAGE_PAYLOAD_LENGTH || 8000);
 const aliases = ["Cipher", "Vanta", "Nova", "Ghost", "Zero", "Pulse", "Echo", "Shade"];
 const reactions = ["\u{1F44D}", "\u{2764}\u{FE0F}", "\u{1F525}", "\u{1F602}", "\u{1F440}"];
 
@@ -162,7 +163,7 @@ export function registerChatSocket(io) {
     socket.on("send-message", async (payload, ack) => {
       try {
         const roomId = sanitizeRoomId(payload?.roomId);
-        const text = sanitizeText(payload?.text || payload?.message, 1000);
+        const text = sanitizeText(payload?.text || payload?.message, maxMessagePayloadLength);
         const hasAttachment = Boolean(payload?.attachment);
 
         if (!roomId || !socketInRoom(socket, roomId)) {
@@ -231,7 +232,7 @@ export function registerChatSocket(io) {
       try {
         const roomId = sanitizeRoomId(payload?.roomId);
         const messageId = sanitizeText(payload?.messageId, 32);
-        const text = sanitizeText(payload?.text, 1000);
+        const text = sanitizeText(payload?.text, maxMessagePayloadLength);
 
         if (!roomId || !messageId || !socketInRoom(socket, roomId)) {
           fail(ack, { reason: "not-in-room" });

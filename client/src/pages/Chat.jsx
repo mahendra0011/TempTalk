@@ -3,6 +3,7 @@ import {
   DoorOpen,
   FileText,
   Image,
+  KeyRound,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -26,10 +27,15 @@ import StatusRail from "../components/StatusRail.jsx";
 import { useInviteQr } from "../hooks/useInviteQr.js";
 import { socket } from "../socket/socket.js";
 import { getRoom } from "../utils/api.js";
+import { appendInviteKey, decryptText, encryptText, inviteKeyFromHash } from "../utils/e2e.js";
 import { getIdentity } from "../utils/identity.js";
 
 function secretKey(roomId) {
   return `temptalk:${roomId}:secret`;
+}
+
+function encryptionStorageKey(roomId) {
+  return `temptalk:${roomId}:e2e-key`;
 }
 
 function upsertMessage(list, message) {
@@ -48,11 +54,40 @@ function replySnapshot(message) {
   };
 }
 
+async function decryptMessage(message, key) {
+  if (!message) {
+    return message;
+  }
+
+  const decrypted = {
+    ...message,
+    text: message.deletedAt ? "" : await decryptText(message.text, key)
+  };
+
+  if (message.replyTo?.text) {
+    decrypted.replyTo = {
+      ...message.replyTo,
+      text: await decryptText(message.replyTo.text, key)
+    };
+  }
+
+  return decrypted;
+}
+
+async function decryptMessages(messages, key) {
+  return Promise.all((messages || []).map((message) => decryptMessage(message, key)));
+}
+
 export default function Chat() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const initialSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
+  const initialEncryptionKey =
+    location.state?.encryptionKey ||
+    inviteKeyFromHash(location.hash) ||
+    sessionStorage.getItem(encryptionStorageKey(roomId)) ||
+    "";
   const initialIdentity = getIdentity(roomId);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -71,6 +106,8 @@ export default function Chat() {
   const [needSecret, setNeedSecret] = useState(false);
   const [secretInput, setSecretInput] = useState(initialSecret);
   const [roomSecret, setRoomSecret] = useState(initialSecret);
+  const [keyInput, setKeyInput] = useState(initialEncryptionKey);
+  const [roomKey, setRoomKey] = useState(initialEncryptionKey);
   const [joinAttempt, setJoinAttempt] = useState(0);
   const [entered, setEntered] = useState(Boolean(location.state?.autoEnter));
   const [replyTarget, setReplyTarget] = useState(null);
@@ -85,11 +122,11 @@ export default function Chat() {
 
   const inviteUrl = useMemo(() => {
     if (location.state?.inviteUrl) {
-      return location.state.inviteUrl;
+      return appendInviteKey(location.state.inviteUrl, roomKey);
     }
 
-    return `${window.location.origin}/chat/${roomId}`;
-  }, [location.state, roomId]);
+    return appendInviteKey(`${window.location.origin}/chat/${roomId}`, roomKey);
+  }, [location.state, roomId, roomKey]);
   const qr = useInviteQr(inviteUrl);
   const ownName = username || aliasInput || initialIdentity.username;
   const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
@@ -156,7 +193,19 @@ export default function Chat() {
     const knownSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
     setRoomSecret(knownSecret);
     setSecretInput(knownSecret);
-  }, [location.state, roomId]);
+
+    const knownKey =
+      location.state?.encryptionKey ||
+      inviteKeyFromHash(location.hash) ||
+      sessionStorage.getItem(encryptionStorageKey(roomId)) ||
+      "";
+    setRoomKey(knownKey);
+    setKeyInput(knownKey);
+
+    if (knownKey) {
+      sessionStorage.setItem(encryptionStorageKey(roomId), knownKey);
+    }
+  }, [location.hash, location.state, roomId]);
 
   useEffect(() => {
     let active = true;
@@ -198,7 +247,7 @@ export default function Chat() {
         socket.emit(
           "join-room",
           { roomId, username: aliasInput.trim() || identity.username, secret: roomSecret },
-          (response) => {
+          async (response) => {
             if (!active) {
               return;
             }
@@ -226,7 +275,7 @@ export default function Chat() {
             setNeedSecret(false);
             setUsername(response.username);
             setUsers(response.users || []);
-            setMessages(response.messages || []);
+            setMessages(await decryptMessages(response.messages || [], roomKey));
             setExpiresAt(response.room?.expiresAt || room.expiresAt);
             setRoomMeta({
               mode: response.room?.mode || room.mode || "private",
@@ -244,18 +293,30 @@ export default function Chat() {
       }
     }
 
-    function handleReceive(message) {
-      setMessages((current) => upsertMessage(current, message));
+    async function handleReceive(message) {
+      const decrypted = await decryptMessage(message, roomKey);
+
+      if (active) {
+        setMessages((current) => upsertMessage(current, decrypted));
+      }
     }
 
-    function handleMessageUpdated(message) {
-      setMessages((current) => upsertMessage(current, message));
+    async function handleMessageUpdated(message) {
+      const decrypted = await decryptMessage(message, roomKey);
+
+      if (active) {
+        setMessages((current) => upsertMessage(current, decrypted));
+      }
     }
 
-    function handleMessagesSeen(payload) {
-      setMessages((current) =>
-        (payload?.messages || []).reduce((next, message) => upsertMessage(next, message), current)
-      );
+    async function handleMessagesSeen(payload) {
+      const decrypted = await decryptMessages(payload?.messages || [], roomKey);
+
+      if (active) {
+        setMessages((current) =>
+          decrypted.reduce((next, message) => upsertMessage(next, message), current)
+        );
+      }
     }
 
     function handleStatus(status) {
@@ -311,7 +372,7 @@ export default function Chat() {
       socket.off("room-full");
       socket.off("disconnect", handleDisconnect);
     };
-  }, [entered, joinAttempt, navigate, roomId, roomSecret]);
+  }, [entered, joinAttempt, navigate, roomId, roomKey, roomSecret]);
 
   useEffect(() => {
     if (!entered || !username || joining || needSecret) {
@@ -342,7 +403,7 @@ export default function Chat() {
     }, 900);
   }
 
-  function sendMessage(event) {
+  async function sendMessage(event) {
     event.preventDefault();
     const clean = text.trim();
 
@@ -350,13 +411,27 @@ export default function Chat() {
       return;
     }
 
+    if (!roomKey) {
+      setError("Encryption key missing. Paste the full invite link or enter the key.");
+      return;
+    }
+
     if (editingMessage) {
+      let encryptedText = "";
+
+      try {
+        encryptedText = await encryptText(clean, roomKey);
+      } catch {
+        setError("Could not encrypt message.");
+        return;
+      }
+
       socket.emit(
         "edit-message",
         {
           roomId,
           messageId: editingMessage.messageId,
-          text: clean
+          text: encryptedText
         },
         (response) => {
           if (!response?.ok) {
@@ -371,6 +446,15 @@ export default function Chat() {
       return;
     }
 
+    let encryptedText = "";
+
+    try {
+      encryptedText = clean ? await encryptText(clean, roomKey) : "";
+    } catch {
+      setError("Could not encrypt message.");
+      return;
+    }
+
     setSendingFile(Boolean(selectedFile));
     socket.emit("typing", { roomId, isTyping: false });
 
@@ -380,7 +464,7 @@ export default function Chat() {
           "send-message",
           {
             roomId,
-            text: clean,
+            text: encryptedText,
             replyToId: replyTarget?.messageId,
             attachment: selectedFile
               ? {
@@ -435,6 +519,7 @@ export default function Chat() {
     event.preventDefault();
     const cleanAlias = aliasInput.trim();
     const clean = secretInput.trim();
+    const cleanKey = keyInput.trim() || roomKey;
 
     if (!cleanAlias) {
       setError("Alias required.");
@@ -446,7 +531,13 @@ export default function Chat() {
       return;
     }
 
+    if (!cleanKey) {
+      setError("Encryption key required. Paste the full invite link or room key.");
+      return;
+    }
+
     sessionStorage.setItem(`temptalk:${roomId}:identity`, JSON.stringify({ username: cleanAlias }));
+    sessionStorage.setItem(encryptionStorageKey(roomId), cleanKey);
 
     if (clean) {
       sessionStorage.setItem(secretKey(roomId), clean);
@@ -455,6 +546,7 @@ export default function Chat() {
     setError("");
     setAliasInput(cleanAlias);
     setRoomSecret(clean);
+    setRoomKey(cleanKey);
     setEntered(true);
     setNeedSecret(false);
     setJoinAttempt((current) => current + 1);
@@ -574,6 +666,7 @@ export default function Chat() {
             connected={connected}
             maxPeers={roomMeta.maxPeers}
             mode={roomMeta.mode}
+            encrypted={Boolean(roomKey)}
           />
 
           <div className="top-actions">
@@ -626,7 +719,7 @@ export default function Chat() {
                 </div>
                 <span className="entry-kicker">{roomMeta.mode === "group" ? "Secret group invite" : "Private invite"}</span>
                 <h2>Enter Room</h2>
-                <p>Choose your anonymous name before joining this TempTalk room.</p>
+                <p>Choose your anonymous name and unlock the browser-only encryption key.</p>
                 <div className="entry-room-id">
                   <span>Room ID</span>
                   <strong>{roomId}</strong>
@@ -647,6 +740,16 @@ export default function Chat() {
                     maxLength={64}
                     onChange={(event) => setSecretInput(event.target.value)}
                     placeholder={roomMeta.requiresSecret ? "Room secret key" : "Secret key if required"}
+                    type="password"
+                  />
+                </label>
+                <label>
+                  <KeyRound size={17} />
+                  <input
+                    value={keyInput}
+                    maxLength={128}
+                    onChange={(event) => setKeyInput(event.target.value)}
+                    placeholder="Encryption key from invite link"
                     type="password"
                   />
                 </label>

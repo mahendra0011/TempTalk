@@ -282,6 +282,60 @@ button:disabled {
   background: rgba(255, 255, 255, 0.035);
 }
 
+.option-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.option-switch button {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 10px 8px;
+  border: 1px solid rgba(196, 255, 220, 0.14);
+  border-radius: 8px;
+  color: rgba(236, 255, 245, 0.68);
+  background: rgba(255, 255, 255, 0.035);
+  font-weight: 800;
+  text-align: center;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.option-switch button svg {
+  color: #36ff88;
+}
+
+.option-switch button:hover,
+.option-switch button:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(54, 255, 136, 0.28);
+}
+
+.option-switch button.active {
+  color: #031008;
+  border-color: rgba(54, 255, 136, 0.52);
+  background: linear-gradient(135deg, #36ff88, #b7ff53);
+  box-shadow: 0 16px 32px rgba(54, 255, 136, 0.16);
+}
+
+.option-switch button.active svg {
+  color: #031008;
+}
+
+.option-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(196, 255, 220, 0.14);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(54, 255, 136, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.035);
+}
+
 .mode-switch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -389,6 +443,21 @@ button:disabled {
   display: inline-flex;
   gap: 7px;
   font-weight: 800;
+}
+
+.privacy-link,
+.back-link {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #36ff88;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.privacy-link {
+  font-size: 0.88rem;
 }
 
 .error-text,
@@ -1209,6 +1278,96 @@ button:disabled {
   text-align: center;
 }
 
+.privacy-shell {
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.privacy-panel {
+  width: min(980px, 100%);
+  display: grid;
+  gap: 24px;
+  padding: clamp(22px, 4vw, 42px);
+  border: 1px solid rgba(196, 255, 220, 0.14);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(54, 255, 136, 0.11), transparent 32%),
+    rgba(5, 12, 10, 0.82);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.privacy-hero {
+  display: grid;
+  gap: 14px;
+}
+
+.privacy-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #36ff88;
+  border: 1px solid rgba(54, 255, 136, 0.28);
+  background: rgba(54, 255, 136, 0.08);
+}
+
+.privacy-hero h1,
+.privacy-grid h2 {
+  margin: 0;
+}
+
+.privacy-hero h1 {
+  color: #ecfff5;
+  font-family: "Rajdhani", "Inter", sans-serif;
+  font-size: clamp(3.1rem, 8vw, 6.4rem);
+  line-height: 0.9;
+}
+
+.privacy-hero p,
+.privacy-grid p {
+  margin: 0;
+  color: rgba(236, 255, 245, 0.68);
+  line-height: 1.7;
+}
+
+.privacy-hero > p {
+  max-width: 680px;
+  font-size: 1.05rem;
+}
+
+.privacy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.privacy-grid article {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(196, 255, 220, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.privacy-grid article svg {
+  color: #36ff88;
+}
+
+.privacy-grid h2 {
+  color: #ecfff5;
+  font-size: 1.05rem;
+}
+
+.privacy-grid strong {
+  color: #ecfff5;
+}
+
 .ended-icon {
   width: 78px;
   height: 78px;
@@ -1331,6 +1490,14 @@ button:disabled {
     grid-template-rows: auto minmax(0, 1fr);
   }
 
+  .privacy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-grid article {
+    min-height: 0;
+  }
+
   .side-panel {
     grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
   }
@@ -1344,7 +1511,8 @@ button:disabled {
 
 @media (max-width: 620px) {
   .home-shell,
-  .ended-shell {
+  .ended-shell,
+  .privacy-shell {
     padding: 12px;
   }
 
@@ -1361,6 +1529,27 @@ button:disabled {
 
   .brand-block h1 {
     font-size: 4.1rem;
+  }
+
+  .privacy-panel {
+    padding: 22px;
+  }
+
+  .privacy-hero h1 {
+    font-size: 3.4rem;
+  }
+
+  .option-switch {
+    grid-template-columns: 1fr;
+  }
+
+  .option-switch button {
+    min-height: 54px;
+    grid-template-columns: auto 1fr;
+    place-items: center start;
+    align-content: center;
+    padding: 0 14px;
+    text-align: left;
   }
 
   .chat-frame {
