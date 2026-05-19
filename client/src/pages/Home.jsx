@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ApiUrlForm from "../components/ApiUrlForm.jsx";
 import { API_URL, configureApiUrl } from "../socket/socket.js";
 import { createRoom } from "../utils/api.js";
 import { appendInviteKey, deriveRoomKey, parseRoomInvite } from "../utils/e2e.js";
@@ -138,7 +137,7 @@ export default function Home() {
       });
     } catch (err) {
       const failedApi = err.status || /failed to fetch|request failed/i.test(err.message || "");
-      setError(failedApi ? `Backend unavailable at ${API_URL}. Set the correct Render API URL below and try again.` : err.message);
+      setError(failedApi ? "Backend unavailable. Try again after the deployment finishes." : err.message);
     } finally {
       setCreating(false);
     }
@@ -250,8 +249,6 @@ export default function Home() {
             </a>
             <small>Android app file</small>
           </div>
-
-          <ApiUrlForm onSaved={() => setError("")} />
 
           {activeAction === "create-room" ? (
             <section className="option-card">

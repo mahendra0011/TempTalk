@@ -279,61 +279,6 @@ button:disabled {
   line-height: 1.45;
 }
 
-.api-url-card {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid rgba(54, 255, 136, 0.16);
-  border-radius: 8px;
-  background: rgba(54, 255, 136, 0.045);
-}
-
-.api-url-heading {
-  display: grid;
-  gap: 4px;
-}
-
-.api-url-heading span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #ecfff5;
-  font-weight: 800;
-}
-
-.api-url-heading svg {
-  color: #36ff88;
-}
-
-.api-url-heading small,
-.api-url-status {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: rgba(236, 255, 245, 0.56);
-  font-size: 0.78rem;
-  line-height: 1.45;
-}
-
-.api-url-input input {
-  width: 100%;
-  height: 42px;
-  border: 1px solid rgba(196, 255, 220, 0.16);
-  border-radius: 8px;
-  padding: 0 12px;
-  color: #ecfff5;
-  background: rgba(255, 255, 255, 0.055);
-  outline: none;
-}
-
-.api-url-input input:focus {
-  border-color: rgba(54, 255, 136, 0.56);
-}
-
-.api-url-status {
-  margin: 0;
-  color: #36ff88;
-}
-
 .generator-row {
   min-height: 48px;
   display: flex;
@@ -1115,33 +1060,6 @@ button:disabled {
 
 .center-state svg {
   color: #36ff88;
-}
-
-.api-recovery {
-  width: min(420px, calc(100% - 32px));
-  margin: 0 auto;
-  text-align: center;
-}
-
-.api-recovery h2,
-.api-recovery p {
-  margin: 0;
-}
-
-.api-recovery h2 {
-  color: #ecfff5;
-  font-family: "Rajdhani", "Inter", sans-serif;
-  font-size: 2rem;
-}
-
-.api-recovery p {
-  color: rgba(236, 255, 245, 0.64);
-  line-height: 1.5;
-}
-
-.api-recovery .api-url-card {
-  width: 100%;
-  text-align: left;
 }
 
 .secret-gate {

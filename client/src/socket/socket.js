@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 const API_STORAGE_KEY = "temptalk:api-url";
 const viteEnv = import.meta.env || {};
 const DEFAULT_API_URL = viteEnv.VITE_API_URL || "http://localhost:5000";
+const LEGACY_BAD_API_URLS = new Set(["https://temptalk-api.onrender.com"]);
 
 function normalizeApiUrl(value) {
   try {
@@ -29,7 +30,14 @@ function getStoredApiUrl() {
   }
 
   try {
-    return localStorage.getItem(API_STORAGE_KEY) || "";
+    const stored = normalizeApiUrl(localStorage.getItem(API_STORAGE_KEY) || "");
+
+    if (LEGACY_BAD_API_URLS.has(stored)) {
+      localStorage.removeItem(API_STORAGE_KEY);
+      return "";
+    }
+
+    return stored;
   } catch {
     return "";
   }
@@ -59,8 +67,8 @@ function resolveInitialApiUrl() {
 
   return (
     normalizeApiUrl(apiFromHash(currentHash)) ||
-    normalizeApiUrl(getStoredApiUrl()) ||
     normalizeApiUrl(DEFAULT_API_URL) ||
+    normalizeApiUrl(getStoredApiUrl()) ||
     "http://localhost:5000"
   );
 }
