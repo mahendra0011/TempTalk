@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createRoom } from "../utils/api.js";
-import { appendInviteKey, generateRoomKey, parseRoomInvite } from "../utils/e2e.js";
+import { appendInviteKey, deriveRoomKey, parseRoomInvite } from "../utils/e2e.js";
 
 const ROOM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const SECRET_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -116,7 +116,7 @@ export default function Home() {
         secret: cleanSecret,
         maxPeers
       });
-      const encryptionKey = generateRoomKey();
+      const encryptionKey = await deriveRoomKey(room.roomId, cleanSecret);
       const inviteUrl = appendInviteKey(room.url, encryptionKey);
 
       if (cleanSecret) {
@@ -143,13 +143,12 @@ export default function Home() {
     setApkStatus("APK download started.");
   }
 
-  function handleJoin(event) {
+  async function handleJoin(event) {
     event.preventDefault();
     const invite = parseRoomInvite(joinId);
     const cleanId = invite.roomId.trim();
     const savedKey = cleanId ? sessionStorage.getItem(`temptalk:${cleanId}:e2e-key`) || "" : "";
     const cleanSecret = joinSecret.trim();
-    const encryptionKey = invite.key || savedKey;
 
     if (!cleanId) {
       setError("Room ID required.");
@@ -161,19 +160,21 @@ export default function Home() {
       return;
     }
 
+    const encryptionKey = invite.key || (await deriveRoomKey(cleanId, cleanSecret)) || savedKey;
+
     sessionStorage.setItem(`temptalk:${cleanId}:secret`, cleanSecret);
 
     if (encryptionKey) {
       sessionStorage.setItem(`temptalk:${cleanId}:e2e-key`, encryptionKey);
     }
 
-    const chatPath = `/chat/${cleanId}${encryptionKey ? `#key=${encodeURIComponent(encryptionKey)}` : ""}`;
+    const chatPath = `/chat/${cleanId}${invite.key ? `#key=${encodeURIComponent(encryptionKey)}` : ""}`;
 
     navigate(chatPath, {
       state: {
         secret: cleanSecret,
         encryptionKey,
-        autoEnter: Boolean(encryptionKey)
+        autoEnter: true
       }
     });
   }

@@ -5,7 +5,6 @@ import {
   EyeOff,
   FileText,
   Image,
-  KeyRound,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -29,7 +28,7 @@ import StatusRail from "../components/StatusRail.jsx";
 import { useInviteQr } from "../hooks/useInviteQr.js";
 import { socket } from "../socket/socket.js";
 import { getRoom } from "../utils/api.js";
-import { appendInviteKey, decryptText, encryptText, inviteKeyFromHash } from "../utils/e2e.js";
+import { appendInviteKey, decryptText, deriveRoomKey, encryptText, inviteKeyFromHash } from "../utils/e2e.js";
 import { getIdentity } from "../utils/identity.js";
 
 function secretKey(roomId) {
@@ -108,7 +107,6 @@ export default function Chat() {
   const [needSecret, setNeedSecret] = useState(false);
   const [secretInput, setSecretInput] = useState(initialSecret);
   const [roomSecret, setRoomSecret] = useState(initialSecret);
-  const [keyInput, setKeyInput] = useState(initialEncryptionKey);
   const [roomKey, setRoomKey] = useState(initialEncryptionKey);
   const [joinAttempt, setJoinAttempt] = useState(0);
   const [entered, setEntered] = useState(Boolean(location.state?.autoEnter));
@@ -118,7 +116,7 @@ export default function Chat() {
   const [sendingFile, setSendingFile] = useState(false);
   const [privacyBlurred, setPrivacyBlurred] = useState(false);
   const [privacyNotice, setPrivacyNotice] = useState("");
-  const [visibleSecrets, setVisibleSecrets] = useState({ room: false, key: false });
+  const [visibleSecrets, setVisibleSecrets] = useState({ room: false });
   const typingTimerRef = useRef(null);
   const messageEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -216,21 +214,35 @@ export default function Chat() {
   }, [messages, typingUser]);
 
   useEffect(() => {
+    let active = true;
     const knownSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
     setRoomSecret(knownSecret);
     setSecretInput(knownSecret);
 
-    const knownKey =
-      location.state?.encryptionKey ||
-      inviteKeyFromHash(location.hash) ||
-      sessionStorage.getItem(encryptionStorageKey(roomId)) ||
-      "";
-    setRoomKey(knownKey);
-    setKeyInput(knownKey);
+    async function syncRoomKey() {
+      const knownKey =
+        location.state?.encryptionKey ||
+        inviteKeyFromHash(location.hash) ||
+        (await deriveRoomKey(roomId, knownSecret)) ||
+        sessionStorage.getItem(encryptionStorageKey(roomId)) ||
+        "";
 
-    if (knownKey) {
-      sessionStorage.setItem(encryptionStorageKey(roomId), knownKey);
+      if (!active) {
+        return;
+      }
+
+      setRoomKey(knownKey);
+
+      if (knownKey) {
+        sessionStorage.setItem(encryptionStorageKey(roomId), knownKey);
+      }
     }
+
+    syncRoomKey();
+
+    return () => {
+      active = false;
+    };
   }, [location.hash, location.state, roomId]);
 
   useEffect(() => {
@@ -437,16 +449,23 @@ export default function Chat() {
       return;
     }
 
-    if (!roomKey) {
-      setError("Encryption key missing. Paste the full invite link or enter the key.");
+    const activeKey = roomKey || (await deriveRoomKey(roomId, roomSecret));
+
+    if (!activeKey) {
+      setError("Secret key missing. Enter the room again.");
       return;
+    }
+
+    if (!roomKey) {
+      setRoomKey(activeKey);
+      sessionStorage.setItem(encryptionStorageKey(roomId), activeKey);
     }
 
     if (editingMessage) {
       let encryptedText = "";
 
       try {
-        encryptedText = await encryptText(clean, roomKey);
+        encryptedText = await encryptText(clean, activeKey);
       } catch {
         setError("Could not encrypt message.");
         return;
@@ -475,7 +494,7 @@ export default function Chat() {
     let encryptedText = "";
 
     try {
-      encryptedText = clean ? await encryptText(clean, roomKey) : "";
+      encryptedText = clean ? await encryptText(clean, activeKey) : "";
     } catch {
       setError("Could not encrypt message.");
       return;
@@ -541,11 +560,10 @@ export default function Chat() {
     });
   }
 
-  function enterRoom(event) {
+  async function enterRoom(event) {
     event.preventDefault();
     const cleanAlias = aliasInput.trim();
     const clean = secretInput.trim();
-    const cleanKey = keyInput.trim() || roomKey;
 
     if (!cleanAlias) {
       setError("Alias required.");
@@ -557,13 +575,12 @@ export default function Chat() {
       return;
     }
 
-    if (!cleanKey) {
-      setError("Encryption key required. Paste the full invite link or room key.");
-      return;
-    }
+    const cleanKey = (await deriveRoomKey(roomId, clean)) || roomKey;
 
     sessionStorage.setItem(`temptalk:${roomId}:identity`, JSON.stringify({ username: cleanAlias }));
-    sessionStorage.setItem(encryptionStorageKey(roomId), cleanKey);
+    if (cleanKey) {
+      sessionStorage.setItem(encryptionStorageKey(roomId), cleanKey);
+    }
 
     if (clean) {
       sessionStorage.setItem(secretKey(roomId), clean);
@@ -745,7 +762,7 @@ export default function Chat() {
                 </div>
                 <span className="entry-kicker">{roomMeta.mode === "group" ? "Secret group invite" : "Private invite"}</span>
                 <h2>Enter Room</h2>
-                <p>Choose your anonymous name and unlock the browser-only encryption key.</p>
+                <p>Choose your anonymous name and enter the room secret key.</p>
                 <div className="entry-room-id">
                   <span>Room ID</span>
                   <strong>{roomId}</strong>
@@ -769,17 +786,6 @@ export default function Chat() {
                     type={visibleSecrets.room ? "text" : "password"}
                   />
                   {secretToggle("room", "room secret key")}
-                </label>
-                <label className="secret-label">
-                  <KeyRound size={17} />
-                  <input
-                    value={keyInput}
-                    maxLength={128}
-                    onChange={(event) => setKeyInput(event.target.value)}
-                    placeholder="Encryption key from invite link"
-                    type={visibleSecrets.key ? "text" : "password"}
-                  />
-                  {secretToggle("key", "encryption key")}
                 </label>
                 <button type="submit">
                   <DoorOpen size={18} />

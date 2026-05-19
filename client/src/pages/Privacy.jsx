@@ -27,10 +27,10 @@ export default function Privacy() {
             <LockKeyhole size={22} />
             <h2>End-to-end encrypted text</h2>
             <p>
-              New rooms generate a browser-only encryption key. The key is shared in the invite link
-              after the <strong>#key</strong> fragment, which is not sent to the API during normal
-              HTTP requests. The server stores encrypted message text and cannot read it without that
-              key.
+              Message text is encrypted in the browser using a key unlocked from the room secret.
+              Invite links can also include a <strong>#key</strong> fragment for convenience. URL
+              fragments are not sent to the API during normal HTTP requests, so the server stores
+              encrypted message text.
             </p>
           </article>
 

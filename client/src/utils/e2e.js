@@ -42,9 +42,20 @@ async function importAesKey(value) {
   return crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt", "decrypt"]);
 }
 
-export function generateRoomKey() {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return bytesToBase64Url(bytes);
+export async function deriveRoomKey(roomId, secret) {
+  const cleanRoomId = String(roomId || "").trim().toLowerCase();
+  const cleanSecret = String(secret || "").trim();
+
+  if (!cleanRoomId || !cleanSecret) {
+    return "";
+  }
+
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    encoder.encode(`temptalk:e2e:v1:${cleanRoomId}:${cleanSecret}`)
+  );
+
+  return bytesToBase64Url(new Uint8Array(digest));
 }
 
 export function isEncryptedText(value) {
