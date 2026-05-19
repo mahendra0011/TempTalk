@@ -37,6 +37,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          yes | sdkmanager --licenses >/dev/null
+
       - name: Install frontend dependencies
         working-directory: client
         run: npm ci --include=dev --no-audit --fund=false
@@ -47,7 +55,7 @@ jobs:
 
       - name: Install Capacitor packaging tools
         working-directory: client
-        run: npm install --no-save --package-lock=false @capacitor/core@latest @capacitor/android@latest @capacitor/cli@latest
+        run: npm install --no-save --package-lock=false @capacitor/core@6.2.1 @capacitor/android@6.2.1 @capacitor/cli@6.2.1
 
       - name: Create Android project
         working-directory: client
