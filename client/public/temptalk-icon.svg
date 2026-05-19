@@ -1,8 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TempTalk">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="45%" r="62%">
+      <stop offset="0%" stop-color="#36ff88" stop-opacity="0.24"/>
+      <stop offset="54%" stop-color="#9a5cff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#020403" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
   <rect width="512" height="512" rx="96" fill="#020403"/>
-  <rect x="34" y="34" width="444" height="444" rx="78" fill="none" stroke="#36ff88" stroke-width="10" opacity="0.55"/>
-  <path d="M144 169c0-31 25-56 56-56h112c31 0 56 25 56 56v67c0 31-25 56-56 56h-33l-58 64c-12 13-34 5-34-13v-51h13c-31 0-56-25-56-56v-67Z" fill="#36ff88"/>
-  <path d="M198 190h116M198 231h82" stroke="#031008" stroke-width="24" stroke-linecap="round"/>
-  <path d="M349 335c0 39-42 64-77 45l-65-36c-19-11-19-38 0-49l65-36c35-19 77 6 77 45v31Z" fill="#9a5cff" opacity="0.9"/>
-  <circle cx="337" cy="130" r="28" fill="#ffc857"/>
+  <rect width="512" height="512" rx="96" fill="url(#glow)"/>
+  <rect x="38" y="38" width="436" height="436" rx="78" fill="none" stroke="#36ff88" stroke-width="10" opacity="0.42"/>
+  <rect x="130" y="118" width="252" height="252" rx="48" fill="#07140f" stroke="#36ff88" stroke-width="8"/>
+  <g fill="none" stroke="#36ff88" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" transform="translate(146 136) scale(9.2)">
+    <path d="M2 12C2 6.5 6.5 2 12 2c3.3 0 6.2 1.6 8 4"/>
+    <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 12 0c0 2.8.5 5.5 1 7.5"/>
+    <path d="M8 21c.5-1.5 1-5.2 1-9a3 3 0 0 1 6 0c0 3.8.5 7.5 1 9"/>
+    <path d="M12 12v9"/>
+  </g>
+  <path d="M376 352c34-18 60-48 73-86" fill="none" stroke="#9a5cff" stroke-width="14" stroke-linecap="round" opacity="0.58"/>
+  <circle cx="386" cy="143" r="18" fill="#ffc857" opacity="0.9"/>
 </svg>
