@@ -29,6 +29,11 @@ export function getMaxAttachmentBytes() {
   return maxAttachmentBytes;
 }
 
+function isSafeUploadTarget(target) {
+  const relative = path.relative(uploadRoot, target);
+  return Boolean(relative) && !relative.startsWith("..") && !path.isAbsolute(relative);
+}
+
 function cleanName(name) {
   return String(name || "attachment")
     .replace(/[^\w.\- ]/g, "")
@@ -103,26 +108,33 @@ export async function saveAttachment({ roomId, file }) {
 
 export async function deleteAttachmentFile(attachment) {
   if (!attachment?.url) {
-    return;
+    return false;
   }
 
   const relative = attachment.url.replace(/^\/uploads\//, "");
   const target = path.resolve(uploadRoot, relative);
 
-  if (!target.startsWith(uploadRoot)) {
-    return;
+  if (!isSafeUploadTarget(target)) {
+    return false;
   }
 
   await fs.rm(target, { force: true }).catch(() => {});
+  return true;
 }
 
 export async function deleteRoomUploads(roomId) {
   const safeRoomId = String(roomId).replace(/[^\w-]/g, "");
+
+  if (!safeRoomId) {
+    return { deleted: false };
+  }
+
   const target = path.resolve(uploadRoot, safeRoomId);
 
-  if (!target.startsWith(uploadRoot)) {
-    return;
+  if (!isSafeUploadTarget(target)) {
+    return { deleted: false };
   }
 
   await fs.rm(target, { recursive: true, force: true }).catch(() => {});
+  return { deleted: true };
 }

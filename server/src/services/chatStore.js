@@ -533,18 +533,40 @@ export async function markMessagesSeen({ roomId, messageIds, username }) {
 }
 
 export async function deleteRoom(roomId) {
-  if (isMongoReady()) {
-    await Promise.all([
-      Room.deleteOne({ roomId }),
-      Message.deleteMany({ roomId }),
-      deleteRoomUploads(roomId)
-    ]);
-    return;
+  const cleanRoomId = String(roomId || "").trim();
+
+  if (!cleanRoomId) {
+    return {
+      roomDeleted: 0,
+      messagesDeleted: 0,
+      uploadsDeleted: false
+    };
   }
 
-  memoryRooms.delete(roomId);
-  memoryMessages.delete(roomId);
-  clearTimeout(memoryTimers.get(roomId));
-  memoryTimers.delete(roomId);
-  await deleteRoomUploads(roomId);
+  if (isMongoReady()) {
+    const [roomResult, messageResult, uploadResult] = await Promise.all([
+      Room.deleteOne({ roomId: cleanRoomId }),
+      Message.deleteMany({ roomId: cleanRoomId }),
+      deleteRoomUploads(cleanRoomId)
+    ]);
+
+    return {
+      roomDeleted: roomResult.deletedCount || 0,
+      messagesDeleted: messageResult.deletedCount || 0,
+      uploadsDeleted: Boolean(uploadResult?.deleted)
+    };
+  }
+
+  const roomDeleted = memoryRooms.delete(cleanRoomId) ? 1 : 0;
+  const messagesDeleted = (memoryMessages.get(cleanRoomId) || []).length;
+  memoryMessages.delete(cleanRoomId);
+  clearTimeout(memoryTimers.get(cleanRoomId));
+  memoryTimers.delete(cleanRoomId);
+  const uploadResult = await deleteRoomUploads(cleanRoomId);
+
+  return {
+    roomDeleted,
+    messagesDeleted,
+    uploadsDeleted: Boolean(uploadResult?.deleted)
+  };
 }

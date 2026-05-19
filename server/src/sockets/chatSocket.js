@@ -382,7 +382,7 @@ export function registerChatSocket(io) {
           return;
         }
 
-        await deleteRoom(roomId);
+        const deletion = await deleteRoom(roomId);
         roomPresence.delete(roomId);
 
         io.to(roomId).emit("chat-ended", {
@@ -397,7 +397,7 @@ export function registerChatSocket(io) {
         });
 
         if (typeof ack === "function") {
-          ack({ ok: true });
+          ack({ ok: true, deletion });
         }
       } catch (error) {
         fail(ack, { reason: "server-error", message: error.message });

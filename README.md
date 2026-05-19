@@ -61,7 +61,7 @@ Message text is encrypted in the browser using a key unlocked from the room secr
 inside the URL fragment, such as `#key=...&secret=...`, so guests can join by entering only an anonymous name. The
 fragment is not sent to the API during normal HTTP requests, so the backend stores encrypted message text.
 
-Pressing End Chat deletes the room, message records, reactions, receipts, and uploaded files from TempTalk server storage.
+Pressing End Chat immediately hard-deletes the room record, message records/chats, reactions, receipts, and uploaded files from TempTalk server storage.
 MongoDB TTL cleanup also removes expired rooms and messages. TempTalk cannot erase content another participant already copied,
 downloaded, recorded, screenshotted, or saved outside the app. In this version, uploaded media files are temporary and deleted
 with the room, but only message text is end-to-end encrypted.
