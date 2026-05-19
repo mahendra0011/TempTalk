@@ -1,9 +1,15 @@
 export function getAllowedOrigins() {
   const raw = process.env.CORS_ORIGIN || process.env.CLIENT_URL || "*";
-  return raw
+  const configured = raw
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+
+  if (configured.includes("*")) {
+    return configured;
+  }
+
+  return [...new Set([...configured, "capacitor://localhost", "ionic://localhost"])];
 }
 
 export function createCorsOptions() {

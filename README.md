@@ -109,3 +109,9 @@ Action: Rewrite
 If Render fails during dependency install with `npm ERR! network read ECONNRESET`, rerun the deploy. That error is a
 temporary npm registry/network drop, not a TempTalk build error. The blueprint uses `npm ci` and local `.npmrc` retry
 settings to make installs more reliable.
+
+If the app shows **Backend unavailable**, open your Render API URL directly at `/api/health`. It must return JSON from
+TempTalk. A `404` means the frontend/APK is pointing at the wrong service URL or the backend service is not deployed from
+`server/`. Paste the correct API origin into the API Deployment box on the home/chat screen, then rebuild the APK with the
+same URL saved as `VITE_API_URL`. For installed APK traffic, TempTalk automatically allows `capacitor://localhost` and
+`ionic://localhost` in backend CORS; if you override CORS at a proxy or dashboard level, allow those origins too.

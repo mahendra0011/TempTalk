@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import ApiUrlForm from "../components/ApiUrlForm.jsx";
 import ChatBubble from "../components/ChatBubble.jsx";
 import IconButton from "../components/IconButton.jsx";
 import QrModal from "../components/QrModal.jsx";
@@ -136,6 +137,7 @@ export default function Chat() {
   const ownName = username || aliasInput || initialIdentity.username;
   const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
   const maxFileBytes = maxFileMb * 1024 * 1024;
+  const backendUnavailable = /backend unavailable/i.test(error);
 
   function toggleSecretVisibility(key) {
     setVisibleSecrets((current) => ({
@@ -776,7 +778,20 @@ export default function Chat() {
           </aside>
 
           <section className={`message-panel ${privacyBlurred ? "message-panel-protected" : ""}`}>
-            {showEntryGate ? (
+            {backendUnavailable ? (
+              <div className="center-state api-recovery">
+                <ShieldAlert size={32} />
+                <h2>Backend unavailable</h2>
+                <p>Set your live Render API URL, then retry this room.</p>
+                <ApiUrlForm
+                  label="Save & Retry"
+                  onSaved={() => {
+                    setError("");
+                    setJoinAttempt((current) => current + 1);
+                  }}
+                />
+              </div>
+            ) : showEntryGate ? (
               <form className="center-state entry-gate" onSubmit={enterRoom}>
                 <div className="entry-icon">
                   <DoorOpen size={30} />
@@ -923,7 +938,7 @@ export default function Chat() {
           </div>
         </form>
 
-        {error ? <p className="toast-error">{error}</p> : null}
+        {error && !backendUnavailable ? <p className="toast-error">{error}</p> : null}
         {privacyNotice ? <p className="toast-error privacy-toast">{privacyNotice}</p> : null}
         {privacyBlurred ? <div className="privacy-overlay">Protected view</div> : null}
       </section>
