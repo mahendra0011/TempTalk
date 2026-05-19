@@ -39,7 +39,6 @@ export default function Home() {
   const navigate = useNavigate();
   const [joinId, setJoinId] = useState("");
   const [joinSecret, setJoinSecret] = useState("");
-  const [joinKey, setJoinKey] = useState("");
   const [activeAction, setActiveAction] = useState("create-room");
   const [roomId, setRoomId] = useState("");
   const [roomSecret, setRoomSecret] = useState("");
@@ -52,8 +51,7 @@ export default function Home() {
   const [visibleSecrets, setVisibleSecrets] = useState({
     room: false,
     group: false,
-    joinSecret: false,
-    joinKey: false
+    joinSecret: false
   });
   const mode = activeAction === "create-group" ? "group" : "private";
 
@@ -150,16 +148,20 @@ export default function Home() {
     const invite = parseRoomInvite(joinId);
     const cleanId = invite.roomId.trim();
     const savedKey = cleanId ? sessionStorage.getItem(`temptalk:${cleanId}:e2e-key`) || "" : "";
-    const encryptionKey = invite.key || joinKey.trim() || savedKey;
+    const cleanSecret = joinSecret.trim();
+    const encryptionKey = invite.key || savedKey;
 
     if (!cleanId) {
       setError("Room ID required.");
       return;
     }
 
-    if (joinSecret.trim()) {
-      sessionStorage.setItem(`temptalk:${cleanId}:secret`, joinSecret.trim());
+    if (!cleanSecret) {
+      setError("Secret key required.");
+      return;
     }
+
+    sessionStorage.setItem(`temptalk:${cleanId}:secret`, cleanSecret);
 
     if (encryptionKey) {
       sessionStorage.setItem(`temptalk:${cleanId}:e2e-key`, encryptionKey);
@@ -169,7 +171,7 @@ export default function Home() {
 
     navigate(chatPath, {
       state: {
-        secret: joinSecret.trim(),
+        secret: cleanSecret,
         encryptionKey,
         autoEnter: Boolean(encryptionKey)
       }
@@ -351,7 +353,7 @@ export default function Home() {
                   <DoorOpen size={18} />
                   Enter Room
                 </span>
-                <small>Paste the invite link, or enter the room ID and secret key.</small>
+                <small>Enter the room ID and secret key to join.</small>
               </div>
               <div className="join-row">
                 <DoorOpen size={19} />
@@ -361,7 +363,7 @@ export default function Home() {
                   value={joinId}
                   maxLength={180}
                   onChange={(event) => setJoinId(event.target.value)}
-                  placeholder="Room ID or invite link"
+                  placeholder="Room ID"
                 />
                 <button className="join-submit" type="submit" aria-label="Enter room" title="Enter room">
                   <span>Enter</span>
@@ -379,18 +381,6 @@ export default function Home() {
                   type={visibleSecrets.joinSecret ? "text" : "password"}
                 />
                 {secretToggle("joinSecret", "room secret key")}
-              </div>
-              <div className="join-row">
-                <LockKeyhole size={19} />
-                <input
-                  aria-label="Encryption key"
-                  value={joinKey}
-                  maxLength={128}
-                  onChange={(event) => setJoinKey(event.target.value)}
-                  placeholder="Encryption key if link is missing it"
-                  type={visibleSecrets.joinKey ? "text" : "password"}
-                />
-                {secretToggle("joinKey", "encryption key")}
               </div>
             </form>
           ) : null}
