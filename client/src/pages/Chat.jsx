@@ -28,7 +28,14 @@ import StatusRail from "../components/StatusRail.jsx";
 import { useInviteQr } from "../hooks/useInviteQr.js";
 import { socket } from "../socket/socket.js";
 import { getRoom } from "../utils/api.js";
-import { appendInviteKey, decryptText, deriveRoomKey, encryptText, inviteKeyFromHash } from "../utils/e2e.js";
+import {
+  appendInviteKey,
+  decryptText,
+  deriveRoomKey,
+  encryptText,
+  inviteKeyFromHash,
+  inviteSecretFromHash
+} from "../utils/e2e.js";
 import { getIdentity } from "../utils/identity.js";
 
 function secretKey(roomId) {
@@ -83,7 +90,7 @@ export default function Chat() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const initialSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
+  const initialSecret = location.state?.secret || inviteSecretFromHash(location.hash) || sessionStorage.getItem(secretKey(roomId)) || "";
   const initialEncryptionKey =
     location.state?.encryptionKey ||
     inviteKeyFromHash(location.hash) ||
@@ -123,11 +130,11 @@ export default function Chat() {
 
   const inviteUrl = useMemo(() => {
     if (location.state?.inviteUrl) {
-      return appendInviteKey(location.state.inviteUrl, roomKey);
+      return appendInviteKey(location.state.inviteUrl, roomKey, roomSecret);
     }
 
-    return appendInviteKey(`${window.location.origin}/chat/${roomId}`, roomKey);
-  }, [location.state, roomId, roomKey]);
+    return appendInviteKey(`${window.location.origin}/chat/${roomId}`, roomKey, roomSecret);
+  }, [location.state, roomId, roomKey, roomSecret]);
   const qr = useInviteQr(inviteUrl);
   const ownName = username || aliasInput || initialIdentity.username;
   const maxFileMb = Number(import.meta.env.VITE_MAX_ATTACHMENT_MB || 50);
@@ -215,7 +222,7 @@ export default function Chat() {
 
   useEffect(() => {
     let active = true;
-    const knownSecret = location.state?.secret || sessionStorage.getItem(secretKey(roomId)) || "";
+    const knownSecret = location.state?.secret || inviteSecretFromHash(location.hash) || sessionStorage.getItem(secretKey(roomId)) || "";
     setRoomSecret(knownSecret);
     setSecretInput(knownSecret);
 
@@ -297,6 +304,15 @@ export default function Chat() {
               if (response?.reason === "secret-required" || response?.reason === "invalid-secret") {
                 setNeedSecret(true);
                 setEntered(false);
+
+                if (response?.reason === "invalid-secret") {
+                  setRoomSecret("");
+                  setSecretInput("");
+                  setRoomKey(inviteKeyFromHash(location.hash) || "");
+                  sessionStorage.removeItem(secretKey(roomId));
+                  sessionStorage.removeItem(encryptionStorageKey(roomId));
+                }
+
                 return;
               }
 
@@ -688,6 +704,7 @@ export default function Chat() {
 
   const composerContext = editingMessage || replyTarget;
   const showEntryGate = !entered || needSecret;
+  const showSecretInput = !roomSecret && (roomMeta.requiresSecret || joining || needSecret);
 
   return (
     <main className="app-shell chat-shell">
@@ -762,7 +779,7 @@ export default function Chat() {
                 </div>
                 <span className="entry-kicker">{roomMeta.mode === "group" ? "Secret group invite" : "Private invite"}</span>
                 <h2>Enter Room</h2>
-                <p>Choose your anonymous name and enter the room secret key.</p>
+                <p>{showSecretInput ? "Choose your anonymous name and enter the room secret key." : "Enter your anonymous name to join this invite."}</p>
                 <div className="entry-room-id">
                   <span>Room ID</span>
                   <strong>{roomId}</strong>
@@ -776,17 +793,19 @@ export default function Chat() {
                     placeholder="Anonymous alias"
                   />
                 </label>
-                <label className="secret-label">
-                  <LockKeyhole size={17} />
-                  <input
-                    value={secretInput}
-                    maxLength={64}
-                    onChange={(event) => setSecretInput(event.target.value)}
-                    placeholder={roomMeta.requiresSecret ? "Room secret key" : "Secret key if required"}
-                    type={visibleSecrets.room ? "text" : "password"}
-                  />
-                  {secretToggle("room", "room secret key")}
-                </label>
+                {showSecretInput ? (
+                  <label className="secret-label">
+                    <LockKeyhole size={17} />
+                    <input
+                      value={secretInput}
+                      maxLength={64}
+                      onChange={(event) => setSecretInput(event.target.value)}
+                      placeholder="Room secret key"
+                      type={visibleSecrets.room ? "text" : "password"}
+                    />
+                    {secretToggle("room", "room secret key")}
+                  </label>
+                ) : null}
                 <button type="submit">
                   <DoorOpen size={18} />
                   <span>Enter Room</span>

@@ -46,6 +46,7 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 - Secret group rooms with a required room key
 - Custom room IDs and secret keys for create room, create group, and enter room flows
 - Real-time messages, typing, online status, and QR invite
+- Invite links unlock the room automatically, so guests only enter an anonymous name
 - Browser-side encryption for message text using the room secret or invite key
 - Replies, reactions, edit message, delete message
 - Sent and seen receipts
@@ -56,9 +57,9 @@ For Render deployment, set `MONGODB_URI`. Without MongoDB, rooms live only in se
 
 ## Privacy Notes
 
-Message text is encrypted in the browser using a key unlocked from the room secret. Invite links can also include
-`#key=...` for convenience. The fragment is not sent to the API during normal HTTP requests, so the backend stores
-encrypted message text.
+Message text is encrypted in the browser using a key unlocked from the room secret. Invite links include secret access
+inside the URL fragment, such as `#key=...&secret=...`, so guests can join by entering only an anonymous name. The
+fragment is not sent to the API during normal HTTP requests, so the backend stores encrypted message text.
 
 Pressing End Chat deletes the room, message records, reactions, receipts, and uploaded files from TempTalk server storage.
 MongoDB TTL cleanup also removes expired rooms and messages. TempTalk cannot erase content another participant already copied,

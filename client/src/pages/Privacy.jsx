@@ -28,9 +28,9 @@ export default function Privacy() {
             <h2>End-to-end encrypted text</h2>
             <p>
               Message text is encrypted in the browser using a key unlocked from the room secret.
-              Invite links can also include a <strong>#key</strong> fragment for convenience. URL
-              fragments are not sent to the API during normal HTTP requests, so the server stores
-              encrypted message text.
+              Invite links carry secret access inside the URL fragment, so guests only enter an
+              anonymous name. URL fragments are not sent to the API during normal HTTP requests,
+              so the server stores encrypted message text.
             </p>
           </article>
 

@@ -117,14 +117,15 @@ export default function Home() {
         maxPeers
       });
       const encryptionKey = await deriveRoomKey(room.roomId, cleanSecret);
-      const inviteUrl = appendInviteKey(room.url, encryptionKey);
+      const inviteUrl = appendInviteKey(room.url, encryptionKey, cleanSecret);
+      const inviteTarget = new URL(inviteUrl, window.location.origin);
 
       if (cleanSecret) {
         sessionStorage.setItem(`temptalk:${room.roomId}:secret`, cleanSecret);
       }
       sessionStorage.setItem(`temptalk:${room.roomId}:e2e-key`, encryptionKey);
 
-      navigate(`/chat/${room.roomId}#key=${encodeURIComponent(encryptionKey)}`, {
+      navigate(`${inviteTarget.pathname}${inviteTarget.hash}`, {
         state: {
           inviteUrl,
           secret: cleanSecret,
@@ -148,7 +149,7 @@ export default function Home() {
     const invite = parseRoomInvite(joinId);
     const cleanId = invite.roomId.trim();
     const savedKey = cleanId ? sessionStorage.getItem(`temptalk:${cleanId}:e2e-key`) || "" : "";
-    const cleanSecret = joinSecret.trim();
+    const cleanSecret = (invite.secret || joinSecret).trim();
 
     if (!cleanId) {
       setError("Room ID required.");
@@ -168,13 +169,16 @@ export default function Home() {
       sessionStorage.setItem(`temptalk:${cleanId}:e2e-key`, encryptionKey);
     }
 
-    const chatPath = `/chat/${cleanId}${invite.key ? `#key=${encodeURIComponent(encryptionKey)}` : ""}`;
+    const hasInviteAccess = Boolean(invite.key || invite.secret);
+    const invitePath = hasInviteAccess ? appendInviteKey(`/chat/${cleanId}`, encryptionKey, cleanSecret) : "";
+    const inviteTarget = hasInviteAccess ? new URL(invitePath, window.location.origin) : null;
+    const chatPath = inviteTarget ? `${inviteTarget.pathname}${inviteTarget.hash}` : `/chat/${cleanId}`;
 
     navigate(chatPath, {
       state: {
         secret: cleanSecret,
         encryptionKey,
-        autoEnter: true
+        autoEnter: !hasInviteAccess
       }
     });
   }
@@ -354,7 +358,7 @@ export default function Home() {
                   <DoorOpen size={18} />
                   Enter Room
                 </span>
-                <small>Enter the room ID and secret key to join.</small>
+                <small>Paste an invite link, or enter the room ID and secret key.</small>
               </div>
               <div className="join-row">
                 <DoorOpen size={19} />

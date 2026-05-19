@@ -108,14 +108,28 @@ export function inviteKeyFromHash(hash = "") {
   return params.get("key") || params.get("e2e") || "";
 }
 
-export function appendInviteKey(url, key) {
-  if (!key) {
+export function inviteSecretFromHash(hash = "") {
+  const clean = String(hash || "").replace(/^#/, "");
+  const params = new URLSearchParams(clean);
+  return params.get("secret") || params.get("roomSecret") || params.get("s") || "";
+}
+
+export function appendInviteKey(url, key, secret = "") {
+  if (!key && !secret) {
     return url;
   }
 
   const target = new URL(url, window.location.origin);
   const params = new URLSearchParams(target.hash.replace(/^#/, ""));
-  params.set("key", key);
+
+  if (key) {
+    params.set("key", key);
+  }
+
+  if (secret) {
+    params.set("secret", secret);
+  }
+
   target.hash = params.toString();
   return target.toString();
 }
@@ -124,7 +138,7 @@ export function parseRoomInvite(value) {
   const raw = String(value || "").trim();
 
   if (!raw) {
-    return { roomId: "", key: "" };
+    return { roomId: "", key: "", secret: "" };
   }
 
   try {
@@ -134,7 +148,8 @@ export function parseRoomInvite(value) {
     if (match) {
       return {
         roomId: decodeURIComponent(match[1]),
-        key: inviteKeyFromHash(parsed.hash)
+        key: inviteKeyFromHash(parsed.hash),
+        secret: inviteSecretFromHash(parsed.hash)
       };
     }
   } catch {
@@ -144,6 +159,7 @@ export function parseRoomInvite(value) {
   const [roomId, hash = ""] = raw.split("#");
   return {
     roomId: roomId.trim(),
-    key: inviteKeyFromHash(hash ? `#${hash}` : "")
+    key: inviteKeyFromHash(hash ? `#${hash}` : ""),
+    secret: inviteSecretFromHash(hash ? `#${hash}` : "")
   };
 }
