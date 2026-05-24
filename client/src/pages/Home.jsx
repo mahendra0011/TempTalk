@@ -8,7 +8,9 @@ import {
   Fingerprint,
   Loader2,
   LockKeyhole,
+  Moon,
   Sparkles,
+  Sun,
   Terminal,
   UsersRound
 } from "lucide-react";
@@ -18,6 +20,7 @@ import { API_URL, configureApiUrl } from "../socket/socket.js";
 import { createRoom } from "../utils/api.js";
 import { appendInviteKey, deriveRoomKey, parseRoomInvite } from "../utils/e2e.js";
 import { buildRoomInviteUrl } from "../utils/inviteLinks.js";
+import { applyTheme, getInitialTheme } from "../utils/theme.js";
 
 const ROOM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const SECRET_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -50,12 +53,18 @@ export default function Home() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [apkStatus, setApkStatus] = useState("");
+  const [theme, setTheme] = useState(getInitialTheme);
   const [visibleSecrets, setVisibleSecrets] = useState({
     room: false,
     group: false,
     joinSecret: false
   });
   const mode = activeAction === "create-group" ? "group" : "private";
+  const darkMode = theme === "dark";
+
+  function toggleTheme() {
+    setTheme((current) => applyTheme(current === "dark" ? "light" : "dark"));
+  }
 
   function toggleSecretVisibility(key) {
     setVisibleSecrets((current) => ({
@@ -189,6 +198,16 @@ export default function Home() {
 
   return (
     <main className="app-shell home-shell">
+      <button
+        className="theme-toggle"
+        type="button"
+        aria-label={darkMode ? "Turn on light mode" : "Turn on dark mode"}
+        title={darkMode ? "Light mode" : "Dark mode"}
+        onClick={toggleTheme}
+      >
+        {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+        <span>{darkMode ? "Light" : "Dark"}</span>
+      </button>
       <section className="home-grid">
         <div className="brand-block">
           <div className="brand-mark">
