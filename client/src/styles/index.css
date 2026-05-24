@@ -1605,6 +1605,7 @@ button:disabled {
     top: 10px;
     right: 10px;
     min-height: 36px;
+    max-width: calc(100vw - 20px);
     padding: 0 11px;
     font-size: 0.84rem;
   }
@@ -1877,6 +1878,17 @@ button:disabled {
     border-radius: 14px;
   }
 
+  .entry-room-id {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 8px 12px;
+  }
+
+  .entry-room-id strong {
+    width: 100%;
+    text-align: left;
+  }
+
   .entry-gate label {
     gap: 8px;
   }
@@ -1930,8 +1942,8 @@ button:disabled {
 
 :root:not([data-theme="dark"]) body {
   background:
-    linear-gradient(rgba(18, 143, 88, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 143, 88, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(11, 111, 67, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 111, 67, 0.045) 1px, transparent 1px),
     radial-gradient(circle at 10% 10%, rgba(54, 255, 136, 0.2), transparent 32%),
     radial-gradient(circle at 88% 12%, rgba(132, 92, 255, 0.16), transparent 30%),
     linear-gradient(135deg, #f7fff9 0%, #f1f8f4 46%, #f7f4ff 100%);
@@ -1940,7 +1952,7 @@ button:disabled {
 
 :root:not([data-theme="dark"]) .app-shell::before {
   background:
-    linear-gradient(110deg, transparent 0 35%, rgba(18, 143, 88, 0.08) 35% 36%, transparent 36% 100%),
+    linear-gradient(110deg, transparent 0 35%, rgba(11, 111, 67, 0.08) 35% 36%, transparent 36% 100%),
     repeating-linear-gradient(0deg, rgba(26, 51, 38, 0.04) 0 1px, transparent 1px 5px);
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.04));
 }
@@ -1978,7 +1990,7 @@ button:disabled {
 }
 
 :root:not([data-theme="dark"]) .brand-block::after {
-  color: rgba(18, 143, 88, 0.08);
+  color: rgba(11, 111, 67, 0.08);
 }
 
 :root:not([data-theme="dark"]) .brand-mark,
@@ -1986,10 +1998,10 @@ button:disabled {
 :root:not([data-theme="dark"]) .privacy-icon,
 :root:not([data-theme="dark"]) .entry-icon,
 :root:not([data-theme="dark"]) .ended-icon {
-  color: #128f58;
-  border-color: rgba(18, 143, 88, 0.24);
-  background: rgba(18, 143, 88, 0.08);
-  box-shadow: 0 18px 34px rgba(18, 143, 88, 0.12);
+  color: #0b6f43;
+  border-color: rgba(11, 111, 67, 0.24);
+  background: rgba(11, 111, 67, 0.08);
+  box-shadow: 0 18px 34px rgba(11, 111, 67, 0.12);
 }
 
 :root:not([data-theme="dark"]) .eyebrow,
@@ -2008,13 +2020,13 @@ button:disabled {
 :root:not([data-theme="dark"]) .entry-kicker,
 :root:not([data-theme="dark"]) .entry-gate label,
 :root:not([data-theme="dark"]) .join-row {
-  color: #128f58;
+  color: #0b6f43;
 }
 
 :root:not([data-theme="dark"]) .pulse-label::before,
 :root:not([data-theme="dark"]) .peer-row span {
-  background: #128f58;
-  box-shadow: 0 0 14px rgba(18, 143, 88, 0.36);
+  background: #0b6f43;
+  box-shadow: 0 0 14px rgba(11, 111, 67, 0.36);
 }
 
 :root:not([data-theme="dark"]) .brand-block h1,
@@ -2053,7 +2065,7 @@ button:disabled {
 :root:not([data-theme="dark"]) .privacy-hero p,
 :root:not([data-theme="dark"]) .privacy-grid p,
 :root:not([data-theme="dark"]) .ended-panel p {
-  color: rgba(22, 35, 28, 0.68);
+  color: rgba(22, 35, 28, 0.72);
 }
 
 :root:not([data-theme="dark"]) .primary-action,
@@ -2068,8 +2080,8 @@ button:disabled {
 :root:not([data-theme="dark"]) .entry-gate .secret-toggle:hover,
 :root:not([data-theme="dark"]) .entry-gate .secret-toggle:focus-visible {
   color: #ffffff;
-  background: linear-gradient(135deg, #128f58, #1fbf73);
-  box-shadow: 0 14px 30px rgba(18, 143, 88, 0.18);
+  background: linear-gradient(135deg, #0b6f43, #0f7b4b);
+  box-shadow: 0 14px 30px rgba(11, 111, 67, 0.18);
 }
 
 :root:not([data-theme="dark"]) .option-switch button.active svg {
@@ -2077,14 +2089,14 @@ button:disabled {
 }
 
 :root:not([data-theme="dark"]) .secondary-action {
-  color: #128f58;
-  border-color: rgba(18, 143, 88, 0.22);
-  background: rgba(18, 143, 88, 0.08);
+  color: #0b6f43;
+  border-color: rgba(11, 111, 67, 0.22);
+  background: rgba(11, 111, 67, 0.08);
 }
 
 :root:not([data-theme="dark"]) .theme-toggle {
-  color: #128f58;
-  border-color: rgba(18, 143, 88, 0.16);
+  color: #0b6f43;
+  border-color: rgba(11, 111, 67, 0.16);
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 16px 36px rgba(26, 51, 38, 0.12);
 }
@@ -2127,7 +2139,7 @@ button:disabled {
 :root:not([data-theme="dark"]) .entry-gate,
 :root:not([data-theme="dark"]) .message-panel {
   background:
-    radial-gradient(circle at 16% 0%, rgba(18, 143, 88, 0.08), transparent 34%),
+    radial-gradient(circle at 16% 0%, rgba(11, 111, 67, 0.08), transparent 34%),
     rgba(255, 255, 255, 0.82) !important;
 }
 
@@ -2150,7 +2162,7 @@ button:disabled {
 
 :root:not([data-theme="dark"]) .option-switch button:hover,
 :root:not([data-theme="dark"]) .option-switch button:focus-visible {
-  border-color: rgba(18, 143, 88, 0.32);
+  border-color: rgba(11, 111, 67, 0.32);
   background: rgba(255, 255, 255, 0.9);
 }
 
@@ -2163,8 +2175,28 @@ button:disabled {
 
 :root:not([data-theme="dark"]) .join-row input::placeholder,
 :root:not([data-theme="dark"]) .composer-row input::placeholder,
-:root:not([data-theme="dark"]) .secret-gate input::placeholder {
-  color: rgba(22, 35, 28, 0.38);
+:root:not([data-theme="dark"]) .secret-gate input::placeholder,
+:root:not([data-theme="dark"]) .entry-gate input::placeholder {
+  color: rgba(22, 35, 28, 0.5);
+}
+
+:root:not([data-theme="dark"]) input:disabled {
+  opacity: 1;
+  -webkit-text-fill-color: rgba(22, 35, 28, 0.62);
+}
+
+:root:not([data-theme="dark"]) .attach-button {
+  color: #16231c !important;
+}
+
+:root:not([data-theme="dark"]) .attach-button:disabled {
+  color: rgba(22, 35, 28, 0.56) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  opacity: 1;
+}
+
+:root:not([data-theme="dark"]) .composer-row button:disabled {
+  opacity: 0.88;
 }
 
 :root:not([data-theme="dark"]) .chat-topbar,
@@ -2175,7 +2207,7 @@ button:disabled {
 
 :root:not([data-theme="dark"]) .message-panel {
   background:
-    radial-gradient(circle at 14% 8%, rgba(18, 143, 88, 0.08), transparent 30%),
+    radial-gradient(circle at 14% 8%, rgba(11, 111, 67, 0.08), transparent 30%),
     radial-gradient(circle at 88% 16%, rgba(95, 70, 216, 0.08), transparent 24%),
     linear-gradient(rgba(20, 67, 45, 0.04) 1px, transparent 1px),
     #f9fcfa !important;
@@ -2190,9 +2222,9 @@ button:disabled {
 
 :root:not([data-theme="dark"]) .message-bubble-own {
   color: #ffffff;
-  border-color: rgba(18, 143, 88, 0.22);
-  background: linear-gradient(135deg, #128f58 0%, #1fbf73 100%);
-  box-shadow: 0 16px 30px rgba(18, 143, 88, 0.18);
+  border-color: rgba(11, 111, 67, 0.22);
+  background: linear-gradient(135deg, #0b6f43 0%, #0f7b4b 100%);
+  box-shadow: 0 16px 30px rgba(11, 111, 67, 0.18);
 }
 
 :root:not([data-theme="dark"]) .message-meta,
@@ -2231,7 +2263,7 @@ button:disabled {
 :root:not([data-theme="dark"]) .reaction-picker button:focus-visible,
 :root:not([data-theme="dark"]) .message-tools button:hover,
 :root:not([data-theme="dark"]) .message-tools button:focus-visible {
-  background: rgba(18, 143, 88, 0.1);
+  background: rgba(11, 111, 67, 0.1);
 }
 
 :root:not([data-theme="dark"]) .reaction-pill {
