@@ -1893,3 +1893,369 @@ button:disabled {
     max-width: 90%;
   }
 }
+
+/* Light theme defaults */
+:root {
+  color: #16231c;
+  background: #f6fbf7;
+}
+
+body {
+  background:
+    linear-gradient(rgba(18, 143, 88, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 143, 88, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 10% 10%, rgba(54, 255, 136, 0.2), transparent 32%),
+    radial-gradient(circle at 88% 12%, rgba(132, 92, 255, 0.16), transparent 30%),
+    linear-gradient(135deg, #f7fff9 0%, #f1f8f4 46%, #f7f4ff 100%);
+  background-size: 36px 36px, 36px 36px, 100% 100%, 100% 100%, cover;
+}
+
+.app-shell::before {
+  background:
+    linear-gradient(110deg, transparent 0 35%, rgba(18, 143, 88, 0.08) 35% 36%, transparent 36% 100%),
+    repeating-linear-gradient(0deg, rgba(26, 51, 38, 0.04) 0 1px, transparent 1px 5px);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.04));
+}
+
+.brand-block,
+.action-panel,
+.ended-panel,
+.chat-frame,
+.side-panel,
+.message-panel,
+.privacy-panel,
+.qr-modal {
+  border-color: rgba(20, 67, 45, 0.13);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 24px 80px rgba(26, 51, 38, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.home-grid,
+.brand-block,
+.action-panel,
+.panel-header,
+.lede {
+  min-width: 0;
+}
+
+.brand-block h1 {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: clamp(3.55rem, 8vw, 6.2rem);
+  line-height: 0.9;
+}
+
+.lede {
+  max-width: 100%;
+}
+
+.brand-block::after {
+  color: rgba(18, 143, 88, 0.08);
+}
+
+.brand-mark,
+.room-icon,
+.privacy-icon,
+.entry-icon,
+.ended-icon {
+  color: #128f58;
+  border-color: rgba(18, 143, 88, 0.24);
+  background: rgba(18, 143, 88, 0.08);
+  box-shadow: 0 18px 34px rgba(18, 143, 88, 0.12);
+}
+
+.eyebrow,
+.pulse-label,
+.join-heading svg,
+.option-switch button svg,
+.range-row strong,
+.privacy-link,
+.back-link,
+.status-text,
+.typing-line,
+.privacy-grid article svg,
+.file-chip span,
+.status-chip svg,
+.center-state svg,
+.entry-kicker,
+.entry-gate label,
+.join-row {
+  color: #128f58;
+}
+
+.pulse-label::before,
+.peer-row span {
+  background: #128f58;
+  box-shadow: 0 0 14px rgba(18, 143, 88, 0.36);
+}
+
+.brand-block h1,
+.ended-panel h1,
+.join-heading span,
+.privacy-hero h1,
+.privacy-grid h2,
+.privacy-grid strong,
+.room-title h1,
+.identity-card strong,
+.entry-gate h2,
+.entry-room-id strong,
+.composer-context strong,
+.privacy-grid h2,
+.privacy-hero h1 {
+  color: #16231c;
+}
+
+.lede,
+.panel-header,
+.modal-head,
+.join-heading small,
+.app-download-row small,
+.generator-row small,
+.join-form label,
+.range-row,
+.room-title p,
+.identity-card span,
+.peer-row,
+.status-chip,
+.center-state,
+.entry-gate p,
+.entry-room-id span,
+.composer-context span,
+.file-chip strong,
+.privacy-hero p,
+.privacy-grid p,
+.ended-panel p {
+  color: rgba(22, 35, 28, 0.68);
+}
+
+.primary-action,
+.option-switch button.active,
+.join-row button,
+.composer-row button,
+.mode-switch button.active,
+.secret-gate button,
+.entry-gate button,
+.join-row .secret-toggle:hover,
+.join-row .secret-toggle:focus-visible,
+.entry-gate .secret-toggle:hover,
+.entry-gate .secret-toggle:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #128f58, #1fbf73);
+  box-shadow: 0 14px 30px rgba(18, 143, 88, 0.18);
+}
+
+.option-switch button.active svg {
+  color: #ffffff;
+}
+
+.secondary-action {
+  color: #128f58;
+  border-color: rgba(18, 143, 88, 0.22);
+  background: rgba(18, 143, 88, 0.08);
+}
+
+.apk-download {
+  color: #5f46d8;
+  border-color: rgba(95, 70, 216, 0.22);
+  background: rgba(95, 70, 216, 0.08);
+}
+
+.join-room-card,
+.generator-row,
+.option-card,
+.mode-switch,
+.range-row,
+.identity-card,
+.peer-row,
+.composer-row input,
+.file-chip,
+.composer-context,
+.file-attachment,
+.reply-preview,
+.attachment-preview img,
+.attachment-preview video,
+.privacy-grid article,
+.join-row,
+.join-row .secret-toggle,
+.entry-gate .secret-toggle,
+.file-chip button,
+.composer-context button,
+.icon-button,
+.attach-button {
+  border-color: rgba(20, 67, 45, 0.12) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #16231c;
+}
+
+.option-card,
+.privacy-panel,
+.entry-gate,
+.message-panel {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(18, 143, 88, 0.08), transparent 34%),
+    rgba(255, 255, 255, 0.82) !important;
+}
+
+.app-download-row,
+.identity-card {
+  border-color: rgba(95, 70, 216, 0.16);
+  background: rgba(95, 70, 216, 0.06);
+}
+
+.secret-card {
+  border-color: rgba(207, 147, 28, 0.22);
+  background: rgba(255, 200, 87, 0.12);
+}
+
+.option-switch button {
+  color: rgba(22, 35, 28, 0.68);
+  border-color: rgba(20, 67, 45, 0.13);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.option-switch button:hover,
+.option-switch button:focus-visible {
+  border-color: rgba(18, 143, 88, 0.32);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.join-row input,
+.composer-row input,
+.secret-gate input,
+.entry-gate input {
+  color: #16231c;
+}
+
+.join-row input::placeholder,
+.composer-row input::placeholder,
+.secret-gate input::placeholder {
+  color: rgba(22, 35, 28, 0.38);
+}
+
+.chat-topbar,
+.composer {
+  border-color: rgba(20, 67, 45, 0.11);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.message-panel {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(18, 143, 88, 0.08), transparent 30%),
+    radial-gradient(circle at 88% 16%, rgba(95, 70, 216, 0.08), transparent 24%),
+    linear-gradient(rgba(20, 67, 45, 0.04) 1px, transparent 1px),
+    #f9fcfa !important;
+}
+
+.message-bubble {
+  color: #16231c;
+  border-color: rgba(20, 67, 45, 0.12);
+  background: linear-gradient(145deg, #ffffff, #f1f7f3);
+  box-shadow: 0 14px 28px rgba(26, 51, 38, 0.09);
+}
+
+.message-bubble-own {
+  color: #ffffff;
+  border-color: rgba(18, 143, 88, 0.22);
+  background: linear-gradient(135deg, #128f58 0%, #1fbf73 100%);
+  box-shadow: 0 16px 30px rgba(18, 143, 88, 0.18);
+}
+
+.message-meta,
+.message-bubble-own .message-meta,
+.read-status {
+  color: rgba(22, 35, 28, 0.58);
+}
+
+.message-bubble-own .message-meta,
+.message-bubble-own .read-status {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.attachment-preview img,
+.attachment-preview video,
+.file-attachment,
+.reply-preview {
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.message-bubble-own .file-attachment,
+.message-bubble-own .reply-preview,
+.message-bubble-own .reaction-pill,
+.message-bubble-own .message-tools button {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.reaction-picker {
+  border-color: rgba(20, 67, 45, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(26, 51, 38, 0.16);
+}
+
+.reaction-picker button:hover,
+.reaction-picker button:focus-visible,
+.message-tools button:hover,
+.message-tools button:focus-visible {
+  background: rgba(18, 143, 88, 0.1);
+}
+
+.reaction-pill {
+  background: rgba(95, 70, 216, 0.1);
+  border-color: rgba(95, 70, 216, 0.16);
+}
+
+.danger-action {
+  color: #b31736;
+  border-color: rgba(179, 23, 54, 0.2);
+  background: rgba(255, 66, 103, 0.1);
+}
+
+.toast-error,
+.error-text {
+  color: #b31736;
+}
+
+.toast-error {
+  border-color: rgba(179, 23, 54, 0.18);
+  background: rgba(255, 245, 247, 0.96);
+  box-shadow: 0 14px 30px rgba(179, 23, 54, 0.1);
+}
+
+.modal-backdrop {
+  background: rgba(22, 35, 28, 0.32);
+}
+
+.qr-modal {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.ended-icon {
+  color: #b31736;
+  border-color: rgba(179, 23, 54, 0.18);
+  background: rgba(255, 66, 103, 0.08);
+}
+
+@media (max-width: 620px) {
+  .brand-block h1 {
+    font-size: clamp(2.95rem, 12vw, 3.8rem);
+  }
+
+  .lede {
+    max-width: 310px;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .panel-header {
+    font-size: 0.68rem;
+  }
+
+  .pulse-label {
+    padding-left: 10px;
+  }
+
+  .side-panel {
+    background: transparent !important;
+    box-shadow: none;
+  }
+}
