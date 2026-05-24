@@ -66,8 +66,38 @@ button:disabled {
   padding: 28px;
 }
 
+.home-shell {
+  overflow: hidden;
+}
+
+.home-shell::before {
+  background:
+    linear-gradient(115deg, transparent 0 40%, rgba(54, 255, 136, 0.08) 40.4% 40.8%, transparent 41.2% 100%),
+    repeating-linear-gradient(90deg, rgba(54, 255, 136, 0.025) 0 1px, transparent 1px 74px),
+    repeating-linear-gradient(0deg, rgba(154, 92, 255, 0.025) 0 1px, transparent 1px 58px);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.74), rgba(0, 0, 0, 0.18));
+  animation: homeGridShift 24s linear infinite;
+}
+
+.home-shell::after {
+  content: "";
+  position: fixed;
+  inset: -16%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 10%, rgba(54, 255, 136, 0.12) 10.5%, transparent 12% 100%),
+    linear-gradient(0deg, transparent 0 70%, rgba(154, 92, 255, 0.1) 70.4%, transparent 72% 100%),
+    repeating-linear-gradient(135deg, transparent 0 44px, rgba(54, 255, 136, 0.035) 45px 46px, transparent 47px 90px);
+  opacity: 0.58;
+  transform: translate3d(-6%, -4%, 0) skewX(-5deg);
+  animation: homeSignalSweep 14s ease-in-out infinite alternate;
+}
+
 .home-grid {
   width: min(1080px, 100%);
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 430px);
   align-items: stretch;
@@ -1553,6 +1583,36 @@ button:disabled {
   }
 }
 
+@keyframes homeGridShift {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, 74px 0, 0 58px;
+  }
+}
+
+@keyframes homeSignalSweep {
+  0% {
+    opacity: 0.38;
+    transform: translate3d(-8%, -4%, 0) skewX(-5deg);
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.5;
+    transform: translate3d(8%, 4%, 0) skewX(-5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-shell::before,
+  .home-shell::after {
+    animation: none;
+  }
+}
+
 @media (max-width: 920px) {
   .home-grid {
     grid-template-columns: 1fr;
@@ -1955,6 +2015,22 @@ button:disabled {
     linear-gradient(110deg, transparent 0 35%, rgba(11, 111, 67, 0.08) 35% 36%, transparent 36% 100%),
     repeating-linear-gradient(0deg, rgba(26, 51, 38, 0.04) 0 1px, transparent 1px 5px);
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.04));
+}
+
+:root:not([data-theme="dark"]) .home-shell::before {
+  background:
+    linear-gradient(115deg, transparent 0 40%, rgba(11, 111, 67, 0.08) 40.4% 40.8%, transparent 41.2% 100%),
+    repeating-linear-gradient(90deg, rgba(11, 111, 67, 0.025) 0 1px, transparent 1px 74px),
+    repeating-linear-gradient(0deg, rgba(95, 70, 216, 0.025) 0 1px, transparent 1px 58px);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.035));
+}
+
+:root:not([data-theme="dark"]) .home-shell::after {
+  background:
+    linear-gradient(90deg, transparent 0 10%, rgba(11, 111, 67, 0.11) 10.5%, transparent 12% 100%),
+    linear-gradient(0deg, transparent 0 70%, rgba(95, 70, 216, 0.09) 70.4%, transparent 72% 100%),
+    repeating-linear-gradient(135deg, transparent 0 44px, rgba(11, 111, 67, 0.035) 45px 46px, transparent 47px 90px);
+  opacity: 0.42;
 }
 
 :root:not([data-theme="dark"]) .brand-block,
