@@ -8,7 +8,6 @@ import {
   Fingerprint,
   Loader2,
   LockKeyhole,
-  Moon,
   Sparkles,
   Sun,
   Terminal,
@@ -60,7 +59,7 @@ export default function Home() {
     joinSecret: false
   });
   const mode = activeAction === "create-group" ? "group" : "private";
-  const darkMode = theme === "dark";
+  const originalTheme = theme === "dark";
 
   function toggleTheme() {
     setTheme((current) => applyTheme(current === "dark" ? "light" : "dark"));
@@ -201,12 +200,12 @@ export default function Home() {
       <button
         className="theme-toggle"
         type="button"
-        aria-label={darkMode ? "Turn on light mode" : "Turn on dark mode"}
-        title={darkMode ? "Light mode" : "Dark mode"}
+        aria-label={originalTheme ? "Turn on light theme" : "Turn on original theme"}
+        title={originalTheme ? "Light theme" : "Original theme"}
         onClick={toggleTheme}
       >
-        {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-        <span>{darkMode ? "Light" : "Dark"}</span>
+        {originalTheme ? <Sun size={16} /> : <Fingerprint size={16} />}
+        <span>{originalTheme ? "Light" : "Original"}</span>
       </button>
       <section className="home-grid">
         <div className="brand-block">
