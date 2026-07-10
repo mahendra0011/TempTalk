@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { API_URL } from "../socket/socket.js";
+import { decryptFile, isEncryptedText } from "../utils/e2e.js";
 
 const reactionChoices = ["\u{1F44D}", "\u{2764}\u{FE0F}", "\u{1F525}", "\u{1F602}", "\u{1F440}"];
 
@@ -35,12 +36,19 @@ function mediaUrl(attachment) {
   return `${API_URL}${attachment.url}`;
 }
 
-function AttachmentPreview({ attachment }) {
+function AttachmentPreview({ attachment, roomKey }) {
   if (!attachment) {
     return null;
   }
 
   const url = mediaUrl(attachment);
+  const isEncrypted = attachment.iv || attachment.kind === "encrypted";
+
+  if (isEncrypted && roomKey) {
+    return (
+      <EncryptedAttachment attachment={attachment} roomKey={roomKey} />
+    );
+  }
 
   if (attachment.kind === "image") {
     return (
@@ -86,6 +94,56 @@ function AttachmentPreview({ attachment }) {
   );
 }
 
+function EncryptedAttachment({ attachment, roomKey }) {
+  const [decryptedUrl, setDecryptedUrl] = useState("");
+  const [decryptionError, setDecryptionError] = useState(false);
+
+  useEffect(() => {
+    async function decryptAttachment() {
+      try {
+        const response = await fetch(mediaUrl(attachment));
+        const arrayBuffer = await response.arrayBuffer();
+        const decrypted = await decryptFile(arrayBuffer, attachment.iv, roomKey);
+        setDecryptedUrl(URL.createObjectURL(decrypted));
+      } catch {
+        setDecryptionError(true);
+      }
+    }
+    decryptAttachment();
+  }, [attachment, roomKey]);
+
+  if (decryptionError) {
+    return (
+      <div className="attachment-preview">
+        <FileText size={22} />
+        <span>
+          <strong>{attachment.name}</strong>
+          <small>Decryption failed</small>
+        </span>
+      </div>
+    );
+  }
+
+  if (!decryptedUrl) {
+    return (
+      <div className="attachment-preview">
+        <span>Decrypting...</span>
+      </div>
+    );
+  }
+
+  return (
+    <a className="attachment-preview file-attachment" href={decryptedUrl} download={attachment.name}>
+      <FileText size={22} />
+      <span>
+        <strong>{attachment.name}</strong>
+        <small>{formatSize(attachment.size)}</small>
+      </span>
+      <Download size={17} />
+    </a>
+  );
+}
+
 export default function ChatBubble({
   message,
   own,
@@ -93,7 +151,8 @@ export default function ChatBubble({
   onEdit,
   onReact,
   onReply,
-  readStatus
+  readStatus,
+  roomKey
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [heartBurst, setHeartBurst] = useState(false);
@@ -196,7 +255,7 @@ export default function ChatBubble({
           </button>
         ) : null}
 
-        <AttachmentPreview attachment={deleted ? null : message.attachment} />
+        <AttachmentPreview attachment={deleted ? null : message.attachment} roomKey={roomKey} />
 
         {deleted || message.text ? (
           <p className="message-text">{deleted ? "Message deleted" : message.text}</p>

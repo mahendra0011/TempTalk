@@ -13,6 +13,10 @@ function normalizeApiUrl(value) {
       return "";
     }
 
+    if (import.meta.env?.PROD && url.protocol === "http:" && url.hostname !== "localhost") {
+      url.protocol = "https:";
+    }
+
     return url.origin;
   } catch {
     return "";
@@ -56,7 +60,14 @@ function setStoredApiUrl(value) {
 }
 
 function createSocket(url) {
-  return io(url, {
+  const wsUrl = url.replace(/^http/, url.startsWith("https") ? "wss://" + url.slice(8) : "ws://").replace(/^https/, "wss://");
+  if (!url.startsWith("http")) {
+    return io(url, {
+      autoConnect: false,
+      transports: ["websocket", "polling"]
+    });
+  }
+  return io(wsUrl, {
     autoConnect: false,
     transports: ["websocket", "polling"]
   });

@@ -33,6 +33,8 @@ import {
   decryptText,
   deriveRoomKey,
   encryptText,
+  encryptFile,
+  isEncryptedText,
   inviteKeyFromHash,
   inviteSecretFromHash
 } from "../utils/e2e.js";
@@ -504,45 +506,50 @@ export default function Chat() {
     setSendingFile(Boolean(selectedFile));
     socket.emit("typing", { roomId, isTyping: false });
 
-    Promise.resolve(selectedFile ? selectedFile.arrayBuffer() : null)
-      .then((buffer) => {
-        socket.emit(
-          "send-message",
-          {
-            roomId,
-            text: encryptedText,
-            replyToId: replyTarget?.messageId,
-            attachment: selectedFile
-              ? {
-                  name: selectedFile.name,
-                  type: selectedFile.type,
-                  size: selectedFile.size,
-                  data: buffer
-                }
-              : null
-          },
-          (response) => {
-            setSendingFile(false);
-
-            if (!response?.ok) {
-              setError(response?.message || "Message failed.");
-              return;
-            }
-
-            setText("");
-            setSelectedFile(null);
-            setReplyTarget(null);
-
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }
-        );
-      })
-      .catch(() => {
+    let attachment = null;
+    
+    if (selectedFile && activeKey) {
+      try {
+        const encryptedFile = await encryptFile(selectedFile, activeKey);
+        attachment = {
+          name: encryptedFile.originalName,
+          type: "application/octet-stream",
+          size: encryptedFile.size,
+          data: encryptedFile.encryptedData,
+          iv: encryptedFile.iv
+        };
+      } catch {
         setSendingFile(false);
-        setError("Could not read attachment.");
-      });
+        setError("Could not encrypt attachment.");
+        return;
+      }
+    }
+
+    socket.emit(
+      "send-message",
+      {
+        roomId,
+        text: encryptedText,
+        replyToId: replyTarget?.messageId,
+        attachment
+      },
+      (response) => {
+        setSendingFile(false);
+
+        if (!response?.ok) {
+          setError(response?.message || "Message failed.");
+          return;
+        }
+
+        setText("");
+        setSelectedFile(null);
+        setReplyTarget(null);
+
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    );
   }
 
   async function copyInvite() {
@@ -801,24 +808,25 @@ export default function Chat() {
                 <Loader2 className="spin" size={28} />
                 <p>Opening channel</p>
               </div>
-            ) : messages.length ? (
-              <div className="message-list">
-                {messages.map((message) => (
-                  <ChatBubble
-                    key={message.messageId}
-                    message={message}
-                    own={message.sender === ownName}
-                    onDelete={deleteSingleMessage}
-                    onEdit={startEdit}
-                    onReact={reactToSingleMessage}
-                    onReply={startReply}
-                    readStatus={message.sender === ownName ? getReadStatus(message) : ""}
-                  />
-                ))}
-                {typingUser ? <div className="typing-line">{typingUser} is typing...</div> : null}
-                <div ref={messageEndRef} />
-              </div>
-            ) : (
+) : messages.length ? (
+               <div className="message-list">
+                 {messages.map((message) => (
+                   <ChatBubble
+                     key={message.messageId}
+                     message={message}
+                     own={message.sender === ownName}
+                     onDelete={deleteSingleMessage}
+                     onEdit={startEdit}
+                     onReact={reactToSingleMessage}
+                     onReply={startReply}
+                     readStatus={message.sender === ownName ? getReadStatus(message) : ""}
+                     roomKey={roomKey}
+                   />
+                 ))}
+                 {typingUser ? <div className="typing-line">{typingUser} is typing...</div> : null}
+                 <div ref={messageEndRef} />
+               </div>
+             ) : (
               <div className="center-state">
                 <ShieldAlert size={32} />
                 <p>Channel ready</p>
