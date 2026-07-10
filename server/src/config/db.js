@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 
 let mongoReady = false;
 let mongoConfigured = false;
+let reconnectionAttempts = 0;
+const maxReconnectionAttempts = 5;
 
 export async function connectDB() {
   const uri = process.env.MONGODB_URI;
@@ -18,6 +20,7 @@ export async function connectDB() {
   try {
     await mongoose.connect(uri);
     mongoReady = true;
+    reconnectionAttempts = 0;
     console.log("MongoDB connected.");
     return true;
   } catch (error) {
@@ -33,4 +36,13 @@ export function isMongoReady() {
 
 export function wasMongoConfigured() {
   return mongoConfigured;
+}
+
+export function getMongoState() {
+  return {
+    configured: mongoConfigured,
+    ready: mongoReady,
+    state: mongoose.connection.readyState,
+    stateName: ["disconnected", "connected", "connecting", "disconnecting"][mongoose.connection.readyState] || "unknown"
+  };
 }
