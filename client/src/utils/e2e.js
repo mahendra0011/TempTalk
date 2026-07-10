@@ -195,17 +195,26 @@ export async function encryptFile(file, key) {
   const aesKey = await importAesKey(key);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, arrayBuffer);
-  
+
+  // Encrypt metadata (original name and MIME type) to prevent server from seeing them
+  const metaIv = crypto.getRandomValues(new Uint8Array(12));
+  const metaKey = await crypto.subtle.importKey("raw", await getRawKey(key), "AES-GCM", false, ["encrypt"]);
+  const metadata = JSON.stringify({
+    name: file.name,
+    type: file.type
+  });
+  const encryptedMeta = await crypto.subtle.encrypt({ name: "AES-GCM", iv: metaIv }, metaKey, encoder.encode(metadata));
+
   return {
     encryptedData: new Uint8Array(encrypted),
     iv: bytesToBase64Url(iv),
-    originalName: file.name,
-    mimeType: file.type,
-    size: file.size
+    size: file.size,
+    metaIv: bytesToBase64Url(metaIv),
+    meta: bytesToBase64Url(new Uint8Array(encryptedMeta))
   };
 }
 
-export async function decryptFile(encryptedData, iv, key) {
+export async function decryptFile(encryptedData, iv, key, metaIv, meta) {
   const aesKey = await importAesKey(key);
   const ivBytes = typeof iv === "string" ? base64UrlToBytes(iv) : new Uint8Array(iv);
   const decrypted = await crypto.subtle.decrypt(
@@ -213,6 +222,27 @@ export async function decryptFile(encryptedData, iv, key) {
     aesKey,
     new Uint8Array(encryptedData)
   );
-  
-  return new Blob([decrypted]);
+
+  // Decrypt metadata if available
+  let metadata = { name: "attachment", type: "application/octet-stream" };
+  if (metaIv && meta) {
+    try {
+      const metaKey = await crypto.subtle.importKey("raw", await getRawKey(key), "AES-GCM", false, ["decrypt"]);
+      const metaIvBytes = typeof metaIv === "string" ? base64UrlToBytes(metaIv) : new Uint8Array(metaIv);
+      const decryptedMeta = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: metaIvBytes },
+        metaKey,
+        new Uint8Array(meta)
+      );
+      metadata = JSON.parse(decoder.decode(decryptedMeta));
+    } catch {
+      // Fall back to defaults if decryption fails
+    }
+  }
+
+  return {
+    blob: new Blob([decrypted]),
+    name: metadata.name || "attachment",
+    type: metadata.type || "application/octet-stream"
+  };
 }
