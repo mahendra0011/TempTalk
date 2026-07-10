@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
+import { fileTypeFromBuffer } from "file-type";
 
 const allowedTypes = new Map([
   ["image/jpeg", { kind: "image", ext: ".jpg" }],
@@ -70,13 +71,6 @@ function toBuffer(data) {
 }
 
 export async function saveAttachment({ roomId, file }) {
-  const mimeType = String(file?.type || file?.mimeType || "").toLowerCase();
-  const definition = allowedTypes.get(mimeType);
-
-  if (!definition) {
-    throw new Error("Only photo, video, audio, and PDF files are allowed.");
-  }
-
   const buffer = toBuffer(file.data || file.buffer);
 
   if (!buffer || buffer.length === 0) {
@@ -85,6 +79,20 @@ export async function saveAttachment({ roomId, file }) {
 
   if (buffer.length > maxAttachmentBytes) {
     throw new Error(`Attachment must be ${Math.round(maxAttachmentBytes / 1024 / 1024)}MB or smaller.`);
+  }
+
+  const isEncrypted = file.iv || file.type === "application/octet-stream";
+  let definition = { kind: "encrypted", ext: ".enc" };
+  let mimeType = "application/octet-stream";
+
+  if (!isEncrypted) {
+    const detectedType = await fileTypeFromBuffer(buffer);
+    mimeType = detectedType?.mime || String(file?.type || file?.mimeType || "").toLowerCase();
+    const detectedDef = allowedTypes.get(mimeType);
+    if (!detectedDef) {
+      throw new Error("Only photo, video, audio, and PDF files are allowed.");
+    }
+    definition = detectedDef;
   }
 
   const attachmentId = nanoid(12);
@@ -102,7 +110,8 @@ export async function saveAttachment({ roomId, file }) {
     mimeType,
     size: buffer.length,
     storedName,
-    url: `/uploads/${safeRoomId}/${storedName}`
+    url: `/uploads/${safeRoomId}/${storedName}`,
+    ...(isEncrypted ? { iv: file.iv } : {})
   };
 }
 
