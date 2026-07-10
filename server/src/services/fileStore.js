@@ -81,11 +81,14 @@ export async function saveAttachment({ roomId, file }) {
     throw new Error(`Attachment must be ${Math.round(maxAttachmentBytes / 1024 / 1024)}MB or smaller.`);
   }
 
-  const isEncrypted = file.iv || file.type === "application/octet-stream";
+  // Check if file is encrypted (has iv from browser encryption)
+  const hasEncryptedMeta = Boolean(file.metaIv && file.meta && file.iv);
   let definition = { kind: "encrypted", ext: ".enc" };
   let mimeType = "application/octet-stream";
 
-  if (!isEncrypted) {
+  // For encrypted files, we don't need to validate file type (client already did)
+  // The metadata (name, type) is encrypted and handled by client
+  if (!hasEncryptedMeta) {
     const detectedType = await fileTypeFromBuffer(buffer);
     mimeType = detectedType?.mime || String(file?.type || file?.mimeType || "").toLowerCase();
     const detectedDef = allowedTypes.get(mimeType);
@@ -106,12 +109,14 @@ export async function saveAttachment({ roomId, file }) {
   return {
     attachmentId,
     kind: definition.kind,
-    name: cleanName(file.name),
+    // For encrypted files, use sanitized name - actual name is in encrypted metadata
+    name: hasEncryptedMeta ? "attachment.enc" : cleanName(file.name),
     mimeType,
     size: buffer.length,
     storedName,
     url: `/uploads/${safeRoomId}/${storedName}`,
-    ...(isEncrypted ? { iv: file.iv } : {})
+    iv: file.iv,
+    ...(hasEncryptedMeta ? { metaIv: file.metaIv, meta: file.meta } : {})
   };
 }
 
