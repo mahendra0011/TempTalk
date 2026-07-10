@@ -49,9 +49,9 @@ export default function Privacy() {
             <h2>Important limits</h2>
             <p>
               Browser screenshot blocking is best effort. TempTalk cannot remove content that another
-              participant already copied, downloaded, recorded, or saved outside the app. Uploaded
-              media files are temporary and deleted with the room, but only message text is encrypted
-              end to end in this version.
+              participant already copied, downloaded, recorded, or saved outside the app. All attachments
+              (photos, videos, audio, PDFs) are now encrypted end-to-end before upload. Media files are
+              temporary and deleted with the room.
             </p>
           </article>
         </div>
