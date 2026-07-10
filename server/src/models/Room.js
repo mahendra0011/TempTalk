@@ -40,11 +40,13 @@ const roomSchema = new mongoose.Schema(
     },
     expiresAt: {
       type: Date,
-      expires: 0,
       index: true
     }
   },
   { timestamps: true }
 );
+
+// TTL index for automatic room expiration (60 second granularity)
+roomSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 60 });
 
 export default mongoose.model("Room", roomSchema);

@@ -44,7 +44,11 @@ const attachmentSchema = new mongoose.Schema(
     mimeType: String,
     size: Number,
     url: String,
-    storedName: String
+    storedName: String,
+    // Encrypted metadata (for encrypted attachments)
+    iv: String,
+    metaIv: String,
+    meta: String
   },
   { _id: false }
 );
@@ -97,11 +101,13 @@ const messageSchema = new mongoose.Schema(
     },
     expiresAt: {
       type: Date,
-      expires: 0,
       index: true
     }
   },
   { timestamps: true }
 );
+
+// TTL index for automatic message expiration (60 second granularity)
+messageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 60 });
 
 export default mongoose.model("Message", messageSchema);
