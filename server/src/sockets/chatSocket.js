@@ -16,10 +16,42 @@ import { getMaxAttachmentBytes, saveAttachment } from "../services/fileStore.js"
 import { sanitizeRoomId, sanitizeText, sanitizeUsername } from "../utils/sanitize.js";
 
 const roomPresence = new Map();
+const rateLimitMap = new Map();
 const maxPeers = Number(process.env.MAX_ROOM_PEERS || 2);
 const maxMessagePayloadLength = Number(process.env.MAX_MESSAGE_PAYLOAD_LENGTH || 8000);
 const aliases = ["Cipher", "Vanta", "Nova", "Ghost", "Zero", "Pulse", "Echo", "Shade"];
 const reactions = ["\u{1F44D}", "\u{2764}\u{FE0F}", "\u{1F525}", "\u{1F602}", "\u{1F440}"];
+const rateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 1000);
+const rateLimitMaxRequests = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 10);
+
+function checkRateLimit(socketId, eventName) {
+  const now = Date.now();
+  const key = `${socketId}:${eventName}`;
+  const record = rateLimitMap.get(key) || { count: 0, resetTime: now + rateLimitWindowMs };
+  
+  if (now > record.resetTime) {
+    rateLimitMap.set(key, { count: 1, resetTime: now + rateLimitWindowMs });
+    return true;
+  }
+  
+  record.count++;
+  if (record.count > rateLimitMaxRequests) {
+    return false;
+  }
+  
+  rateLimitMap.set(key, record);
+  return true;
+}
+
+function socketRateLimit(eventName) {
+  return (socket, next) => {
+    if (!checkRateLimit(socket.id, eventName)) {
+      socket.emit("rate-limited", { event: eventName });
+      return next(new Error("Too many requests"));
+    }
+    next();
+  };
+}
 
 function getPresence(roomId) {
   if (!roomPresence.has(roomId)) {
@@ -82,6 +114,10 @@ export function registerChatSocket(io) {
   io.on("connection", (socket) => {
     socket.on("join-room", async (payload, ack) => {
       try {
+        if (!checkRateLimit(socket.id, "join-room")) {
+          socket.emit("rate-limited", { event: "join-room" });
+          return;
+        }
         const roomId = sanitizeRoomId(payload?.roomId || payload);
 
         if (!roomId) {
@@ -161,6 +197,10 @@ export function registerChatSocket(io) {
     });
 
     socket.on("send-message", async (payload, ack) => {
+      if (!checkRateLimit(socket.id, "send-message")) {
+        socket.emit("rate-limited", { event: "send-message" });
+        return;
+      }
       try {
         const roomId = sanitizeRoomId(payload?.roomId);
         const text = sanitizeText(payload?.text || payload?.message, maxMessagePayloadLength);
