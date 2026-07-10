@@ -31,10 +31,24 @@ async function getRawKey(value) {
       return decoded;
     }
   } catch {
-    // Fall back to hashing custom passphrases.
+    // Fall back to PBKDF2 for passphrase-derived keys.
   }
 
-  return new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(clean)));
+  const encoder = new TextEncoder();
+  const salt = encoder.encode("temptalk:e2e:v1:salt");
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(clean),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    256
+  );
+  return new Uint8Array(bits);
 }
 
 async function importAesKey(value) {
@@ -174,4 +188,31 @@ export function parseRoomInvite(value) {
     secret: inviteSecretFromHash(hash ? `#${hash}` : ""),
     apiUrl: inviteApiFromHash(hash ? `#${hash}` : "")
   };
+}
+
+export async function encryptFile(file, key) {
+  const arrayBuffer = await file.arrayBuffer();
+  const aesKey = await importAesKey(key);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, arrayBuffer);
+  
+  return {
+    encryptedData: new Uint8Array(encrypted),
+    iv: bytesToBase64Url(iv),
+    originalName: file.name,
+    mimeType: file.type,
+    size: file.size
+  };
+}
+
+export async function decryptFile(encryptedData, iv, key) {
+  const aesKey = await importAesKey(key);
+  const ivBytes = typeof iv === "string" ? base64UrlToBytes(iv) : new Uint8Array(iv);
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: ivBytes },
+    aesKey,
+    new Uint8Array(encryptedData)
+  );
+  
+  return new Blob([decrypted]);
 }

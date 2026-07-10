@@ -1,14 +1,19 @@
 import mongoose from "mongoose";
 
 let mongoReady = false;
+let mongoConfigured = false;
 
 export async function connectDB() {
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
     console.log("MongoDB URI not set. Using temporary in-memory storage.");
+    mongoReady = false;
+    mongoConfigured = false;
     return false;
   }
+
+  mongoConfigured = true;
 
   try {
     await mongoose.connect(uri);
@@ -24,4 +29,8 @@ export async function connectDB() {
 
 export function isMongoReady() {
   return mongoReady && mongoose.connection.readyState === 1;
+}
+
+export function wasMongoConfigured() {
+  return mongoConfigured;
 }

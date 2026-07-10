@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { nanoid } from "nanoid";
-import { isMongoReady } from "../config/db.js";
+import { isMongoReady, wasMongoConfigured } from "../config/db.js";
 import Message from "../models/Message.js";
 import Room from "../models/Room.js";
 import { deleteAttachmentFile, deleteRoomUploads } from "./fileStore.js";
@@ -175,6 +175,7 @@ export async function createRoom(options = {}) {
 }
 
 export async function verifyRoomAccess(roomId, secret) {
+  const mongoWasConfigured = wasMongoConfigured();
   const rawRoom = isMongoReady()
     ? await Room.findOne({
         roomId,
@@ -187,7 +188,9 @@ export async function verifyRoomAccess(roomId, secret) {
     return {
       ok: false,
       reason: "missing-room",
-      message: "Room is unavailable."
+      message: mongoWasConfigured && !isMongoReady() 
+        ? "Server temporarily unavailable. Please try again." 
+        : "Room is unavailable."
     };
   }
 
