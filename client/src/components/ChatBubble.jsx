@@ -96,6 +96,7 @@ function AttachmentPreview({ attachment, roomKey }) {
 
 function EncryptedAttachment({ attachment, roomKey }) {
   const [decryptedUrl, setDecryptedUrl] = useState("");
+  const [decryptedName, setDecryptedName] = useState("attachment.enc");
   const [decryptionError, setDecryptionError] = useState(false);
 
   useEffect(() => {
@@ -103,8 +104,9 @@ function EncryptedAttachment({ attachment, roomKey }) {
       try {
         const response = await fetch(mediaUrl(attachment));
         const arrayBuffer = await response.arrayBuffer();
-        const decrypted = await decryptFile(arrayBuffer, attachment.iv, roomKey);
-        setDecryptedUrl(URL.createObjectURL(decrypted));
+        const result = await decryptFile(arrayBuffer, attachment.iv, roomKey, attachment.metaIv, attachment.meta);
+        setDecryptedUrl(URL.createObjectURL(result.blob));
+        setDecryptedName(result.name);
       } catch {
         setDecryptionError(true);
       }
@@ -133,10 +135,10 @@ function EncryptedAttachment({ attachment, roomKey }) {
   }
 
   return (
-    <a className="attachment-preview file-attachment" href={decryptedUrl} download={attachment.name}>
+    <a className="attachment-preview file-attachment" href={decryptedUrl} download={decryptedName}>
       <FileText size={22} />
       <span>
-        <strong>{attachment.name}</strong>
+        <strong>{decryptedName}</strong>
         <small>{formatSize(attachment.size)}</small>
       </span>
       <Download size={17} />

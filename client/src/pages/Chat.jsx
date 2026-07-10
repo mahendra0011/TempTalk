@@ -512,11 +512,14 @@ export default function Chat() {
       try {
         const encryptedFile = await encryptFile(selectedFile, activeKey);
         attachment = {
-          name: encryptedFile.originalName,
+          // Use encrypted metadata - name is encrypted, only size is visible
+          name: "attachment.enc",
           type: "application/octet-stream",
           size: encryptedFile.size,
           data: encryptedFile.encryptedData,
-          iv: encryptedFile.iv
+          iv: encryptedFile.iv,
+          metaIv: encryptedFile.metaIv,
+          meta: encryptedFile.meta
         };
       } catch {
         setSendingFile(false);
