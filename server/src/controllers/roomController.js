@@ -1,5 +1,6 @@
 import { createRoom, getRoom } from "../services/chatStore.js";
 import { sanitizeRoomId, sanitizeSecret } from "../utils/sanitize.js";
+import { validateCreateRoom, validateRoomId } from "../middleware/validation.js";
 
 const defaultPublicClientUrl = "https://temptalk-1.onrender.com";
 
@@ -28,28 +29,30 @@ function buildPublicUrl(req, roomId) {
 
 export async function createRoomHandler(req, res, next) {
   try {
-    const mode = req.body?.mode === "group" ? "group" : "private";
-    const roomIdInput = String(req.body?.roomId || "").trim();
-    const roomId = roomIdInput ? sanitizeRoomId(roomIdInput) : null;
-    const secret = sanitizeSecret(req.body?.secret);
-    const maxPeers = Number(req.body?.maxPeers);
+    // Use zod validation if available, otherwise fall back to sanitize
+    const validated = req.validatedBody || {
+      mode: req.body?.mode === "group" ? "group" : "private",
+      roomId: sanitizeRoomId(req.body?.roomId),
+      secret: sanitizeSecret(req.body?.secret),
+      maxPeers: Number(req.body?.maxPeers)
+    };
 
-    if (roomIdInput && !roomId) {
+    const mode = validated.mode || "private";
+    const roomId = validated.roomId;
+
+    // Validate room ID
+    if (!roomId) {
       res.status(400).json({ message: "Room ID must be 4-24 letters, numbers, dashes, or underscores." });
       return;
     }
 
-    if (!roomId) {
-      res.status(400).json({ message: "Room ID required." });
-      return;
-    }
-
-    if (!secret) {
+    // Validate secret is required
+    if (!validated.secret) {
       res.status(400).json({ message: "Secret key required." });
       return;
     }
 
-    const room = await createRoom({ roomId, mode, secret, maxPeers });
+    const room = await createRoom({ roomId, mode, secret: validated.secret, maxPeers: validated.maxPeers });
 
     res.status(201).json({
       roomId: room.roomId,
