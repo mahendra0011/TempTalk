@@ -27,7 +27,7 @@ https://github.com/mahendra0011/TempTalk/releases/download/apk-latest/TempTalk.a
 ```
 
 The GitHub Actions workflow at `.github/workflows/android-apk.yml` builds a Capacitor Android APK and
-uploads it to that release whenever client code is pushed to `master`. Set repository variable or secret
+uploads it to that release whenever client code is pushed to `main`. Set repository variable or secret
 `VITE_API_URL` before building the APK if your Render API URL is different from
 `https://temptalk-xwes.onrender.com`.
 
